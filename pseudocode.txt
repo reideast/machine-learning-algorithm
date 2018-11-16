@@ -1,0 +1,51 @@
+
+subroutine Generate Model:
+    give whole list of train_data
+    return pointer to root InternalNode
+
+InternalNode:
+    which attribute to test upon (can be number index)
+    threshold
+    pointer to node left
+    pointer to node right
+    
+LeafNode:
+    predicted class (string)
+    future version: %
+
+
+input: 
+train_data: list of Cases (will be narrowed down each time)
+
+ID3:
+    if train_data is empty
+        then return a Default class
+    else if all train_data have same class
+        how? loop through train_data, examining train_data[i].label...if all same, then return:
+        then return this class
+    else if all Attributes are tested
+        how? look at one train_data element. if it's .attributesAlreadyExamined are all true, then return:
+        then return majority class
+            how? loop through train_data, count each class...return largest
+    else:
+        Choose Best Atrribute: let Best = attribute that best separates train_data relative to Target
+            how? compute information gain
+                how? for each attributesAlreadyExamined where attributesAlreadyExamined=false
+                    compute information again for that attribute 0..4
+                            (this has to also return threshold where we split attribute at
+                                idea: for now, just find max..min of each attrib, and make threshold exactly 1/2
+                            list_of_information_gain.add(calculated)
+                            list_of_thresholds.add(threshold)
+                    then, choose max
+        Best, which is a number 0..numAttrib.
+        Mark attribute as already examined:
+            how? Go through all train_data, mark attributesAlreadyExamined at index Best as True
+        make a new internal node with Best as the attribute to test upon
+            let Tree = new internal node, with attribute and threshold
+        split into two subsets of train_data:
+            How?
+            for each case in train_data:
+                if (case.attributes[best] < threshold) add to list1, else add to list2
+            let SubtreeLeft  = ID3(list1)
+            let SubtreeRight = ID3(list2)
+        return Tree

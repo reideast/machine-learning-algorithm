@@ -1,8 +1,11 @@
 class Case():
     def __init__(self, csv_line, label_column):
         # self.num_attributes = num_attributes
-        self.label_column = label_column
-        self.attributes = []
+        self.label_column = label_column #index of label
+        self.label #string
+        self.attributes = [] #all columns but label
+        self.attributesAlreadyExamined = [] #booleans
+        self.predicted #string
         self.parseCsvLine(csv_line)
 
     def parseCsvLine(self, csv_line):
@@ -11,6 +14,8 @@ class Case():
                 self.label = item
             else:
                 self.attributes.append(item)
+                self.attributesAlreadyExamined.append(false)
+        self.predicted = ""
 
     def printCase(self):
         for item in self.attributes:
