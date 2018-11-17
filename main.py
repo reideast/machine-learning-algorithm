@@ -1,8 +1,12 @@
 from readFile import parse_csv
+from classes.Case import Case
 
 import tkinter as tk
 
+
 class Application(tk.Frame):
+    data_cases = None
+
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.pack()
@@ -19,7 +23,7 @@ class Application(tk.Frame):
         self.QUIT.pack(side="bottom")
 
     def parse_csv(self):
-        parse_csv("owls.csv")
+        data_cases = parse_csv("owls.csv")
 
 
 root = tk.Tk()
