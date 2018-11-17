@@ -3,22 +3,27 @@ from classes.Case import Case
 from train import train
 
 import tkinter as tk
+from tkinter import filedialog
+from tkinter import messagebox
+
+import logging
 
 
 class Application(tk.Frame):
-    data_cases = None
-    trainer = None
-
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.pack()
         self.createWidgets()
 
+        self.filename = ""
+        self.data_cases = None
+        self.trainer = None
+
     def createWidgets(self):
-        self.button_launch_load_file = tk.Button(self)
-        self.button_launch_load_file["text"] = "Load Data File"
-        self.button_launch_load_file["command"] = self.load_file
-        self.button_launch_load_file.pack(side=tk.LEFT)
+        self.button_load_file = tk.Button(self)
+        self.button_load_file["text"] = "Load Data File"
+        self.button_load_file["command"] = self.load_file
+        self.button_load_file.pack(side=tk.LEFT)
 
         self.button_train = tk.Button(self)
         self.button_train["text"] = "Train on Data Set"
@@ -29,46 +34,20 @@ class Application(tk.Frame):
         self.button_quit.pack(side=tk.BOTTOM)
 
     def load_file(self):
-        # window_load = WindowLoadFile(self)
-        # window_load.pack()
+        self.filename = filedialog.askopenfilename()
+        logging.debug("Loading data file: " + self.filename)
 
-        # window_load = tk.Toplevel(self)
-        # tk.Label(window_load, text="Hello!").pack()
-
-        window_load = WindowLoadFile(self)
-        # window_load = WindowLoadFile(root)
-
-
-    # def parse_csv(self):
-    #     self.data_cases = parse_csv("owls.csv")
+        if self.filename is not "":
+            self.data_cases = parse_csv(self.filename)
 
     def train_on_data(self):
-        self.trainer = train(self.data_cases)
+        if self.filename is not "":
+            self.trainer = train(self.data_cases)
+        else:
+            messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
 
-class WindowLoadFile(tk.Toplevel):
-    def __init(self, parent):
-        # tk.Frame.__init__(self, parent)
-        # self.pack()
-        # self.create_widgets()
-
-        tk.Toplevel.__init__(self, parent)
-        self.title("Load Data File")
-
-        self.frame = tk.Frame(self)
-        self.frame.pack()
-
-        self.label = tk.Label(self, text="hello child")
-        self.label.pack()
-
-        self.create_widgets()
-
-    def create_widgets(self):
-        self.button_read_file = tk.Button(self)
-        self.button_read_file["text"] = "Parse 'owls.csv'"
-        self.button_read_file["command"] = self.parse_csv
-        self.button_read_file.pack(side=tk.LEFT)
-
+logging.basicConfig(level=logging.DEBUG)
 
 root = tk.Tk()
 app = Application(master=root)
