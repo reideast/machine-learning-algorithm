@@ -1,4 +1,4 @@
-from readFile import parse_csv
+from parse_csv import parse_csv
 from classes.Case import Case
 from train import train
 
