@@ -1,53 +1,41 @@
-class Case():
+class Case:
     def __init__(self, csv_line, label_column):
-        # self.num_attributes = num_attributes
-        self.label_column = label_column #index of label
-        self.label #string
-        self.attributes = [] #all columns but label
-        self.attributesAlreadyExamined = [] #booleans
-        self.predicted #string
-        self.parseCsvLine(csv_line)
+        self.label_column = label_column  # integer, index of label in the CSV file
+        self.label = None  # string, the actual class of this data case
+        self.predicted = None  # string, the predicted class, if this case is used for testing
+        self.attributes = []  # list of strings, all columns but label
+        self.attributesAlreadyExamined = []  # list of booleans, same length as self.attributes
 
-    def parseCsvLine(self, csv_line):
+        self.__parse_csv_line(csv_line)
+
+    def __parse_csv_line(self, csv_line):
+        # Loop through each comma-separated item in the line, after first truncating the newline from the end
         for idx, item in enumerate(csv_line[0:len(csv_line) - 1].split(",")):
-            if (idx == self.label_column):
+            if idx == self.label_column:
                 self.label = item
             else:
                 self.attributes.append(item)
-                self.attributesAlreadyExamined.append(false)
-        self.predicted = ""
+                self.attributesAlreadyExamined.append(False)
+        self.predicted = None
 
-    def printCase(self):
-        for item in self.attributes:
-            print(item, end="; ")
-        print("label is '" + self.label + "'")
+    def to_string(self):
+        return ",".join(self.attributes) + ", label=" + self.label
 
 
-def parseCsv(filename):
-    LABEL_COL = 4
-    training_cases = []
+def parse_csv(filename):
+    LABEL_COL = 4 # TODO: This is hard-coded, but there should be functionality to choose the column (GUI)
+
+    cases = []
 
     file = open(filename)
-    count = 0
-
-    # # Parse just first line to detect how many items there are
-    # # this consumes the line so the `for line in file` below will not re-use it
-    # firstLine = file.readline()
-    # count += 1
-    # # case = Case(firstLine, LABEL_COL)
-    # training_cases.append(Case(firstLine, LABEL_COL))
-    # training_cases[0].printCase()
-    # # print("Num items per line=" + str(len(case.attributes)))
 
     # Read the rest of the lines
     for line in file:
-        training_cases.append(Case(line, LABEL_COL))
-        count += 1
+        cases.append(Case(line, LABEL_COL))
 
     file.close()
 
-    for case in training_cases:
-        case.printCase()
-    print("Number of lines=" + str(count))
+    for case in cases:
+        print(case.to_string())
 
-
+    return cases

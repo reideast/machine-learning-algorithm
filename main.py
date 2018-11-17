@@ -1,4 +1,4 @@
-from readFile import parseCsv
+from readFile import parse_csv
 
 import tkinter as tk
 
@@ -19,7 +19,7 @@ class Application(tk.Frame):
         self.QUIT.pack(side="bottom")
 
     def parse_csv(self):
-        parseCsv("owls.csv")
+        parse_csv("owls.csv")
 
 
 root = tk.Tk()
