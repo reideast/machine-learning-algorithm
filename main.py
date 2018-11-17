@@ -7,6 +7,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 
 import logging
+import os
 
 
 class Application(tk.Frame):
@@ -34,10 +35,13 @@ class Application(tk.Frame):
         self.button_quit.pack(side=tk.BOTTOM)
 
     def load_file(self):
-        self.filename = filedialog.askopenfilename()
-        logging.debug("Loading data file: " + self.filename)
+        chosen_file = filedialog.askopenfilename(initialdir=os.getcwd(),
+                                                   title="Choose a data file",
+                                                   filetypes=(("CSV files", "*.csv"), ("All files", "*.*")))
+        if chosen_file is not "":
+            self.filename = chosen_file  # Temp variable used so cancelling the dialog when a file had already been loaded will not prevent proceeding
 
-        if self.filename is not "":
+            logging.debug("Loading data file: " + self.filename)
             self.data_cases = parse_csv(self.filename)
 
     def train_on_data(self):
