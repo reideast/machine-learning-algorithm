@@ -19,4 +19,4 @@ class Case:
         self.predicted = None
 
     def to_string(self):
-        return ",".join(self.attributes) + ", label=" + self.label
+        return ", ".join(self.attributes) + ", label=" + self.label
