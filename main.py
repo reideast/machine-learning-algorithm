@@ -23,9 +23,12 @@ class Application(tk.Frame):
         self.trainer = None
 
     def createWidgets(self):
+        self.frame_controls = tk.Frame(self)
+        self.frame_controls.pack(side=tk.TOP)
+
         pack_options = {"side": tk.LEFT, "padx": 8, "pady": 8, "ipadx": 4, "ipady": 4}
 
-        self.button_load_file = tk.Button(self)
+        self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
         self.button_load_file["command"] = self.load_file
         self.image_load_file = tk.PhotoImage(file="images/open.png")
@@ -33,7 +36,7 @@ class Application(tk.Frame):
         self.button_load_file["image"] = self.image_load_file
         self.button_load_file.pack(pack_options)
 
-        self.button_train = tk.Button(self)
+        self.button_train = tk.Button(self.frame_controls)
         self.button_train["text"] = "Train on Data Set"
         self.button_train["command"] = self.train_on_data
         self.image_train = tk.PhotoImage(file="images/process.png")
@@ -41,7 +44,7 @@ class Application(tk.Frame):
         self.button_train["image"] = self.image_train
         self.button_train.pack(pack_options)
 
-        self.button_previous = tk.Button(self)
+        self.button_previous = tk.Button(self.frame_controls)
         self.button_previous["text"] = "Previous"
         self.button_previous["state"] = tk.DISABLED
         self.button_previous["command"] = lambda: messagebox.showinfo("Previous", "Previous")
@@ -50,7 +53,7 @@ class Application(tk.Frame):
         self.button_previous["image"] = self.image_previous
         self.button_previous.pack(pack_options)
 
-        self.button_next = tk.Button(self)
+        self.button_next = tk.Button(self.frame_controls)
         self.button_next["text"] = "Next"
         self.button_next["state"] = tk.DISABLED
         self.button_next["command"] = lambda: messagebox.showinfo("Next", "Next")
@@ -58,6 +61,13 @@ class Application(tk.Frame):
         self.button_next["compound"] = tk.RIGHT
         self.button_next["image"] = self.image_next
         self.button_next.pack(pack_options)
+
+        self.frame_results = tk.Frame(self)
+        self.frame_results.pack(side=tk.TOP)
+
+        self.tree_canvas = tk.Canvas(self.frame_results, width=600, height=600)
+        self.tree_canvas.pack()
+        self.tree_canvas.create_rectangle(0, 0, 600, 600, fill="white")
 
     def load_file(self):
         chosen_file = filedialog.askopenfilename(initialdir=os.getcwd(),
