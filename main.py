@@ -165,27 +165,22 @@ class Application(tk.Frame):
             num_cols = 4  # generate with four columns by default
             row = [""] * num_cols
 
-        # DEBUG:
-        print("DEBUG: ", end=": ")
-        for i, item in enumerate(row):
-            print(str(i) + " '" + item + "'", end=", ")
-        print()
-
-        parent = self.subframe_col_options_inner
         self.cols_labels = []
         self.cols_text_boxes = []
         self.cols_radio_buttons = []
         self.cols_radio_var = IntVar()
         for idx in range(num_cols):
-            label = tk.Label(parent, text="#" + str(idx + 1) + ": " + row[idx])
+            label = tk.Label(self.subframe_col_options_inner,
+                             text="#" + str(idx + 1) + ": " + row[idx])
             label.grid(row=0, column=idx)
             self.cols_labels.append(label)
         for idx in range(num_cols):
-            text_box = tk.Entry(parent, width=15)
+            text_box = tk.Entry(self.subframe_col_options_inner, width=15)
             text_box.grid(row=1, column=idx)
             self.cols_text_boxes.append(text_box)
         for idx in range(num_cols):
-            radio = tk.Radiobutton(parent, text="Label", variable=self.cols_radio_var, value=idx)
+            radio = tk.Radiobutton(self.subframe_col_options_inner,
+                                   text="Label", variable=self.cols_radio_var, value=idx)
             radio.grid(row=2, column=idx)
             self.cols_radio_buttons.append(radio)
         self.cols_radio_buttons[num_cols - 1].select()  # Select last in list, since many data sets have the final column as the label

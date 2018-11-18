@@ -4,7 +4,7 @@ class Case:
     attributes_names = []  # list of strings, the user-defined names for each column, all columns but label
     label_name = None  # string, the user-defined name for the label column
 
-    def __init__(self, csv_line, label_column):
+    def __init__(self, csv_line):
         self.label = None  # string, the actual class of this data case
         self.predicted = None  # string, the predicted class, if this case is used for testing
         self.attributes = []  # list of strings, all columns but label
