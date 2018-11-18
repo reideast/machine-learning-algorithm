@@ -1,5 +1,6 @@
 from parse_csv import parse_csv, read_one
 from classes.Case import Case
+from about import get_about_message
 from train import train
 
 import tkinter as tk
@@ -20,10 +21,11 @@ class Application(tk.Frame):
         self.data_cases = None
         self.trainer = None
 
+        # ##################   Frame Top: Control Buttons   ################## #
         self.frame_controls = tk.Frame(self)
         self.frame_controls.pack(side=tk.TOP)
 
-        pack_options_button = {"side": tk.LEFT, "padx": 8, "pady": 8, "ipadx": 4, "ipady": 4}
+        pack_options_button = {"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 4, "ipady": 4}
 
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
@@ -73,6 +75,13 @@ class Application(tk.Frame):
         self.button_save["image"] = self.image_save
         self.button_save.pack(pack_options_button)
 
+        self.button_about = tk.Button(self.frame_controls)
+        self.button_about["command"] = lambda: messagebox.showinfo("About this Program", get_about_message())
+        self.image_about = tk.PhotoImage(file="images/about.png")
+        self.button_about["image"] = self.image_about
+        self.button_about.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+
+        # ##################   Frame Bottom: Results   ################## #
         # Frame switching code using tkraise() to bring z-order of frame up: Bryan Oakley (26 September 2011) https://stackoverflow.com/a/7557028/5271224
         self.frame_bottom = tk.Frame(self)
         self.frame_bottom.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -242,20 +251,6 @@ class Application(tk.Frame):
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
-
-    # todo: About dialog with attribution:
-    #   process by popcornarts from the Noun Project
-    #       https://thenounproject.com/search/?q=process&i=1056444
-    #   open by Landan Lloyd from the Noun Project
-    #       https://thenounproject.com/search/?q=open&i=1509580
-    #   previous by Three Six Five from the Noun Project
-    #       https://thenounproject.com/search/?q=previous&i=1708821
-    #   Next by Three Six Five from the Noun Project
-    #       https://thenounproject.com/365/uploads/?i=1708819
-    #   Save by Sophia Bai from the Noun Project
-    #       https://thenounproject.com/search/?q=save&i=1919373
-    #   Data by BomSymbols from the Noun Project
-    #       https://thenounproject.com/term/data/610617/
 
 DEBUG = True
 if DEBUG:
