@@ -1,5 +1,7 @@
 from classes.Case import Case
 
+
+# Read the whole file, creating a list of Cases, one for each row
 def parse_csv(filename):
     LABEL_COL = 4 # TODO: This is hard-coded, but there should be functionality to choose the column (GUI)
 
@@ -17,3 +19,12 @@ def parse_csv(filename):
         print(case.to_string())
 
     return cases
+
+
+# Read only the first row of the file, returning a list of the column-separated-values for that row
+def read_one(filename):
+    file = open(filename)
+    line = file.readline()
+    file.close()
+    return line[0:len(line) - 1].split(",")
+    # return ["a", "b", "c", "d", "e"]
