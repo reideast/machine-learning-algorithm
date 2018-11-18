@@ -62,6 +62,15 @@ class Application(tk.Frame):
         self.button_next["image"] = self.image_next
         self.button_next.pack(pack_options)
 
+        self.button_save = tk.Button(self.frame_controls)
+        self.button_save["text"] = "Save Results"
+        self.button_save["state"] = tk.DISABLED
+        self.button_save["command"] = lambda: messagebox.showinfo("Save", "Save")
+        self.image_save = tk.PhotoImage(file="images/save.png")
+        self.button_save["compound"] = tk.LEFT
+        self.button_save["image"] = self.image_save
+        self.button_save.pack(pack_options)
+
         self.frame_results = tk.Frame(self)
         self.frame_results.pack(side=tk.TOP)
 
@@ -95,6 +104,8 @@ class Application(tk.Frame):
     #       https://thenounproject.com/search/?q=previous&i=1708821
     #   Next by Three Six Five from the Noun Project
     #       https://thenounproject.com/365/uploads/?i=1708819
+    #   Save by Sophia Bai from the Noun Project
+    #       https://thenounproject.com/search/?q=save&i=1919373
 
 logging.basicConfig(level=logging.DEBUG)
 
