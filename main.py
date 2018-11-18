@@ -1,6 +1,7 @@
 from parse_csv import parse_csv, read_one
 from classes.Case import Case
 from about import get_about_message
+from split import clone_spliter
 from train import train
 
 import tkinter as tk
@@ -9,6 +10,7 @@ from tkinter import filedialog, messagebox, IntVar
 import logging
 import os
 
+import random
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -18,8 +20,10 @@ class Application(tk.Frame):
 
         self.filename = ""
         self.is_file_prepared = False
-        self.data_cases = None
         self.trainer = None
+        self.master_data_set = None
+        self.training_set = None
+        self.testing_set = None
 
         # ##################   Frame Top: Control Buttons   ################## #
         self.frame_controls = tk.Frame(self)
@@ -228,21 +232,56 @@ class Application(tk.Frame):
                 print("Metadata for Case: (label col num=" + str(Case.label_column) + ")")
                 print(", ".join(Case.attributes_names) + ", label=" + Case.label_name)
 
-            self.data_cases = parse_csv(self.filename)
+            self.master_data_set = parse_csv(self.filename)
             self.label_processed_csv.pack()
             self.button_train["state"] = tk.NORMAL
             self.is_file_prepared = True
         else:
             messagebox.showwarning("No file loaded", "Cannot select file attributes: no data file has been loaded")
 
-        # TODO: NOTE: copy list w/ objects:
-        # import copy
-        # new_list = copy.deepcopy(old_list)
-        # overriding deepcopy mechanism for classes: __deepcopy__(self): https://docs.python.org/2/library/copy.html
-
     def train_on_data(self):
-        if self.data_cases is not "":  # TODO: rename to self.master_data_set
-            self.trainer = train(self.data_cases)
+        if self.master_data_set is not "":
+            for idx, item in enumerate(self.master_data_set):
+                item.DEBUG_INDEX = idx
+
+            self.training_set, self.testing_set = clone_spliter(self.master_data_set)
+
+            for item in self.master_data_set:
+                print(item.DEBUG_INDEX, end=",")
+            print()
+            muxer = random.randint(0, len(self.master_data_set))
+            for item in self.training_set:
+                print(item.DEBUG_INDEX, end=",")
+                if item.DEBUG_INDEX == muxer:
+                    item.attributes[0] = "MUXED"
+            print()
+            for item in self.testing_set:
+                print(item.DEBUG_INDEX, end=",")
+                if item.DEBUG_INDEX == muxer:
+                    item.attributes[0] = "MUXED"
+            print()
+
+            self.master_data_set[12].attributes[0] = "MUXED"
+
+            for item in self.master_data_set:
+                if item.DEBUG_INDEX == muxer:
+                    print(item.attributes)
+                if item.attributes[0] == "MUXED":
+                    print("Found a muxed item within the master list! #" + str(item.DEBUG_INDEX))
+            for item in self.training_set:
+                if item.DEBUG_INDEX == muxer:
+                    print('train ' + str(item.DEBUG_INDEX) + '-', end="")
+                    print(item.attributes)
+                if item.attributes[0] == "MUXED":
+                    print("Found a muxed item within training list #" + str(item.DEBUG_INDEX))
+            for item in self.testing_set:
+                if item.DEBUG_INDEX == muxer:
+                    print('test ' + str(item.DEBUG_INDEX) + '-', end="")
+                    print(item.attributes)
+                if item.attributes[0] == "MUXED":
+                    print("Found a muxed item within testing list #" + str(item.DEBUG_INDEX))
+
+            #DEBUG: re-enable self.trainer = train(self.training_set)
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
