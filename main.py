@@ -10,7 +10,6 @@ from tkinter import filedialog, messagebox, IntVar
 import logging
 import os
 
-import random
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -241,47 +240,9 @@ class Application(tk.Frame):
 
     def train_on_data(self):
         if self.master_data_set is not "":
-            for idx, item in enumerate(self.master_data_set):
-                item.DEBUG_INDEX = idx
-
             self.training_set, self.testing_set = clone_spliter(self.master_data_set)
 
-            for item in self.master_data_set:
-                print(item.DEBUG_INDEX, end=",")
-            print()
-            muxer = random.randint(0, len(self.master_data_set))
-            for item in self.training_set:
-                print(item.DEBUG_INDEX, end=",")
-                if item.DEBUG_INDEX == muxer:
-                    item.attributes[0] = "MUXED"
-            print()
-            for item in self.testing_set:
-                print(item.DEBUG_INDEX, end=",")
-                if item.DEBUG_INDEX == muxer:
-                    item.attributes[0] = "MUXED"
-            print()
-
-            self.master_data_set[12].attributes[0] = "MUXED"
-
-            for item in self.master_data_set:
-                if item.DEBUG_INDEX == muxer:
-                    print(item.attributes)
-                if item.attributes[0] == "MUXED":
-                    print("Found a muxed item within the master list! #" + str(item.DEBUG_INDEX))
-            for item in self.training_set:
-                if item.DEBUG_INDEX == muxer:
-                    print('train ' + str(item.DEBUG_INDEX) + '-', end="")
-                    print(item.attributes)
-                if item.attributes[0] == "MUXED":
-                    print("Found a muxed item within training list #" + str(item.DEBUG_INDEX))
-            for item in self.testing_set:
-                if item.DEBUG_INDEX == muxer:
-                    print('test ' + str(item.DEBUG_INDEX) + '-', end="")
-                    print(item.attributes)
-                if item.attributes[0] == "MUXED":
-                    print("Found a muxed item within testing list #" + str(item.DEBUG_INDEX))
-
-            #DEBUG: re-enable self.trainer = train(self.training_set)
+            self.trainer = train(self.training_set)
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 

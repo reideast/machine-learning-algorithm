@@ -10,8 +10,6 @@ class Case:
         self.attributes = []  # list of strings, all columns but label
         self.attributesAlreadyExamined = []  # list of booleans, same length as self.attributes
 
-        self.DEBUG_INDEX = -1
-
         self.__parse_csv_line(csv_line)
 
     def __parse_csv_line(self, csv_line):
