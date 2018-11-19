@@ -3,3 +3,4 @@
 *.png
 *.url
 __pycache__
+.idea
