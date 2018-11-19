@@ -3,12 +3,14 @@ from classes.Case import Case
 from about import get_about_message
 from split import clone_spliter
 from train import train
+from graph_tree import create_sample_graph
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, IntVar
 
 import logging
 import os
+import base64
 
 
 class Application(tk.Frame):
@@ -195,6 +197,20 @@ class Application(tk.Frame):
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
+        # DEBUG
+        if True:
+            self.binary_img_data = create_sample_graph()
+            print(self.binary_img_data)
+            self.base64_img_data = base64.standard_b64encode(self.binary_img_data)
+            print(self.base64_img_data)
+            self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
+            print(self.photoimage_img_data)
+            self.show_subframe_tree()
+            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
+
+            return
+
+
         chosen_file = filedialog.askopenfilename(initialdir=os.getcwd(),
                                                  title="Choose a data file",
                                                  filetypes=(("CSV files", "*.csv"), ("All files", "*.*")))

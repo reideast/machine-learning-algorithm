@@ -30,8 +30,15 @@ Run `python main.py` to open GUI.
 Source code has been tested with Python version 3.6
 
 ### graphviz
-To generate tree visualisations of the models, the graphviz package must be installed on the local machine.
+
+Graphviz is a popular graph-creating library with its own markup language. To generate tree visualisations of the models, this package must be installed on the local machine.
 
 Please follow the download instructions at [graphviz project](https://graphviz.gitlab.io/). The `dot` executable must be available, or graphs will be blank
 
 Note: For a Windows installation, the graphviz `bin` directory must be added to the `PATH` env variable for Python to utilise it.
+
+### pydot
+
+Pydot is an interface used to create graphviz objects in Python code.
+
+Install with `pip install pydot`. Full details at [pydot project](https://github.com/pydot/pydot)
