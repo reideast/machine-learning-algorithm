@@ -8,6 +8,8 @@ def train(data_cases):
     print("Begin1" +str(len(data_cases)))
     model.treeRoot=recursive(data_cases)
     print("AllDOne" +str(len(data_cases)))
+    print("Print Tree")
+    printTree(model.treeRoot)
     
 def recursive(data_cases):
     print("Begin2" +str(len(data_cases)))
@@ -51,7 +53,7 @@ def recursive(data_cases):
     infoGained = []
     thresholds = []
     for attrib in range(len(Case.attributes_names)):
-        if data_cases[0].attributesAlreadyExamined[attrib]:
+        if data_cases[0].attributesAlreadyExamined[attrib]:#Look at the logic here! Should be checking it off
             infoGained.append(-1)
             thresholds.append(-1)
         else:
@@ -82,6 +84,20 @@ def recursive(data_cases):
     
     print("Inner Node Complete")
     return tree
+
+def printTree(root):#this is for testing purposes
+    open=[root]
+    while len(open)!=0:
+        current = open.pop()
+        if current.isLeaf:
+            print(current.predicted)
+        else:
+            print("Internal"+str(current.splitAttribute)+" "+str(current.threshold))
+            open.append(current.leftChild)
+            open.append(current.rightChild)
+        
+    
+    
         
         
         
