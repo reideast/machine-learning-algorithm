@@ -21,7 +21,7 @@ class Case:
             if idx == Case.label_column:
                 self.label = item
             else:
-                self.attributes.append(item)
+                self.attributes.append(float(item))
                 self.attributesAlreadyExamined.append(False)
         self.predicted = None
 

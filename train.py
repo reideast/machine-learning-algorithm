@@ -15,6 +15,7 @@ def recursive(data_cases):
     if len(data_cases)==0:
         tree.isLeaf=True
         tree.predicted="Default" #Todo is this correct???
+        print("Default")
         return tree
     owls={}
     
@@ -26,14 +27,15 @@ def recursive(data_cases):
     if len(owls)==1:
         tree.isLeaf=True
         tree.predicted=list(owls.keys())[0] 
+        print("Identify Class")
         return tree
     
-    allExamined=False
-    for isExamined in data_cases[0].attributesAlreadyExamined:
-        if isExamined == True:
-            allExamined = True
+    haveFoundAnyNonExamined=False
+    for alreadyExamined in data_cases[0].attributesAlreadyExamined:
+        if alreadyExamined == False:
+            haveFoundAnyNonExamined = True
             
-    if allExamined == False:
+    if haveFoundAnyNonExamined == False:
         tree.isLeaf = True
         max=-1
         maxIndex=0
@@ -42,7 +44,7 @@ def recursive(data_cases):
                 max=item
                 maxIndex=idx
         tree.predicted = list(owls.keys())[maxIndex]
-          
+        print("No more Attributes")
         return tree              
     
     #Internal Node still needs split
@@ -78,7 +80,7 @@ def recursive(data_cases):
     tree.leftChild=recursive(leftList)
     tree.rightChild=recursive(rightList)            
     
-    
+    print("Inner Node Complete")
     return tree
         
         

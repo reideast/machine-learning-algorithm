@@ -17,8 +17,8 @@ def parse_csv(filename):
 
     file.close()
 
-    for case in cases:
-        print(case.to_string())
+    #for case in cases:
+        #print(case.to_string())
 
     return cases
 
