@@ -242,7 +242,7 @@ class Application(tk.Frame):
         if self.master_data_set is not "":
             self.training_set, self.testing_set = clone_spliter(self.master_data_set)
 
-            self.trainer = train(self.training_set)
+            train(self.training_set)
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
