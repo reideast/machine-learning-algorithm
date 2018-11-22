@@ -204,30 +204,26 @@ class Application(tk.Frame):
 
     # DEBUG: Load up owls.csv quickly
     def cheater_shortcut(self):
-        self.filename = "owls.csv"
-        self.add_col_options()
-        self.show_subframe_columns()
+        # self.filename = "owls.csv"
+        # self.add_col_options()
+        # self.show_subframe_columns()
+        #
+        # self.save_file_attributes()
+        #
+        # self.train_on_data()
 
-        self.save_file_attributes()
-
-        self.train_on_data()
+        # DEBUG: Show a graph
+        self.binary_img_data = create_sample_graph()
+        print(self.binary_img_data)
+        self.base64_img_data = base64.standard_b64encode(self.binary_img_data)
+        print(self.base64_img_data)
+        self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
+        print(self.photoimage_img_data)
+        self.show_subframe_tree()
+        self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
-        # DEBUG
-        if True:
-            self.binary_img_data = create_sample_graph()
-            print(self.binary_img_data)
-            self.base64_img_data = base64.standard_b64encode(self.binary_img_data)
-            print(self.base64_img_data)
-            self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
-            print(self.photoimage_img_data)
-            self.show_subframe_tree()
-            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
-
-            return
-
-
         chosen_file = filedialog.askopenfilename(initialdir=os.getcwd(),
                                                  title="Choose a data file",
                                                  filetypes=(("CSV files", "*.csv"), ("All files", "*.*")))
