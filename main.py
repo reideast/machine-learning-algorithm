@@ -109,9 +109,9 @@ class Application(tk.Frame):
         self.subframe_tree_canvas = tk.Frame(self.frame_bottom)
         self.subframe_tree_canvas.grid(row=0, column=0, stick="nsew")
 
-        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, width=600, height=600)
+        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
         self.tree_canvas.pack()
-        self.tree_canvas.create_rectangle(0, 0, 600, 600, fill="white")
+        # self.tree_canvas.create_rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, fill="white")
 
         self.subframe_columns = tk.Frame(self.frame_bottom)
         self.subframe_columns.grid(row=0, column=0, stick="nsew")
@@ -236,9 +236,17 @@ class Application(tk.Frame):
             self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
             # print(self.photoimage_img_data)
 
+            print("Image width: %f" % self.photoimage_img_data.width())
+
+            # Resize canvas to fit
+            self.tree_canvas.config(width=self.photoimage_img_data.width())
+
+
             # Show graph pane and paint image
             self.show_subframe_tree()
-            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
+            self.img_on_canvas = self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
+            # zoom_scale = CANVAS_WIDTH / self.photoimage_img_data.width()
+            # self.tree_canvas.scale(self.img_on_canvas, zoom_scale, zoom_scale, 0, 0)
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
@@ -297,6 +305,9 @@ class Application(tk.Frame):
 DEBUG = True
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
+
+CANVAS_WIDTH = 600
+CANVAS_HEIGHT = 600
 
 root = tk.Tk()
 master_app = Application(master=root)
