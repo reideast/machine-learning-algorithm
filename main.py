@@ -32,12 +32,17 @@ class Application(tk.Frame):
 
         pack_options_button = {"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 4, "ipady": 4}
 
-        # DEBUG: Cheater button
+        # DEBUG: Cheater buttons
         self.button_cheat = tk.Button(self.frame_controls)
         self.button_cheat["command"] = self.cheater_shortcut
         self.image_cheat = tk.PhotoImage(file="images/process.png")
         self.button_cheat["image"] = self.image_cheat
         self.button_cheat.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        self.button_cheat_graph = tk.Button(self.frame_controls)
+        self.button_cheat_graph["command"] = self.cheater_shortcut_graph
+        self.image_cheat_graph = tk.PhotoImage(file="images/data.png")
+        self.button_cheat_graph["image"] = self.image_cheat_graph
+        self.button_cheat_graph.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
 
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
@@ -204,23 +209,34 @@ class Application(tk.Frame):
 
     # DEBUG: Load up owls.csv quickly
     def cheater_shortcut(self):
-        # self.filename = "owls.csv"
-        # self.add_col_options()
-        # self.show_subframe_columns()
-        #
-        # self.save_file_attributes()
-        #
-        # self.train_on_data()
+        self.filename = "owls.csv"
+        self.add_col_options()
+        self.show_subframe_columns()
 
-        # DEBUG: Show a graph
-        self.binary_img_data = create_sample_graph()
-        print(self.binary_img_data)
-        self.base64_img_data = base64.standard_b64encode(self.binary_img_data)
-        print(self.base64_img_data)
-        self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
-        print(self.photoimage_img_data)
-        self.show_subframe_tree()
-        self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
+        self.save_file_attributes()
+
+        self.train_on_data()
+
+    # DEBUG: show graph based on trained data
+    def cheater_shortcut_graph(self):
+        if self.model is None:
+            logging.error("No model yet!")
+        else:
+            # DEBUG: Show a graph
+
+            # Made Graph using pydot python objects and return as binary image data
+            self.binary_img_data = create_sample_graph()
+            # print(self.binary_img_data)
+
+            # Convert to a tkinter picture object
+            self.base64_img_data = base64.standard_b64encode(self.binary_img_data)
+            # print(self.base64_img_data)
+            self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
+            # print(self.photoimage_img_data)
+
+            # Show graph pane and paint image
+            self.show_subframe_tree()
+            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
