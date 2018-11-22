@@ -5,6 +5,31 @@ pydot example 1
 @url: http://pythonhaven.wordpress.com/2009/12/09/generating_graphs_with_pydot
 """
 import pydot # import pydot or you're not going to get anywhere my friend :D
+from classes.Case import Case
+
+def graph_model(model):
+    """
+    Construct a Graphviz tree from the decision tree model
+    :param model: a classes.Model, which contains a decision tree we wish to graph
+    :return: Binary image data, type `bytes` in Python 3
+    """
+    graph = pydot.Dot(graph_type="graph")
+
+    __build_tree_graph(model.treeRoot, graph)
+
+    graph.write_png('model_graph.png')
+
+    return graph.create_gif(prog="dot")
+
+def __build_tree_graph(node, graph):
+    graph.add_edge(pydot.Edge(__label_node(node), "left"))
+    graph.add_edge(pydot.Edge(__label_node(node), "right"))
+
+def __label_node(node):
+    if node.isLeaf:
+        return node.predicted
+    else:
+        return Case.attributes_names[node.splitAttribute] + "<" + ("%.1f" % node.threshold)
 
 def create_sample_graph():
     # first you create a new graph, you do that with pydot.Dot()

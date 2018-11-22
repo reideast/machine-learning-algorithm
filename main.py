@@ -3,7 +3,7 @@ from classes.Case import Case
 from about import get_about_message
 from split import clone_spliter
 from train import train
-from graph_tree import create_sample_graph
+from graph_tree import create_sample_graph, graph_model
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, IntVar
@@ -25,6 +25,7 @@ class Application(tk.Frame):
         self.master_data_set = None
         self.training_set = None
         self.testing_set = None
+        self.model = None
 
         # ##################   Frame Top: Control Buttons   ################## #
         self.frame_controls = tk.Frame(self)
@@ -225,7 +226,8 @@ class Application(tk.Frame):
             # DEBUG: Show a graph
 
             # Made Graph using pydot python objects and return as binary image data
-            self.binary_img_data = create_sample_graph()
+            # self.binary_img_data = create_sample_graph()
+            self.binary_img_data = graph_model(self.model)
             # print(self.binary_img_data)
 
             # Convert to a tkinter picture object
@@ -287,7 +289,7 @@ class Application(tk.Frame):
         if self.master_data_set is not "":
             self.training_set, self.testing_set = clone_spliter(self.master_data_set)
 
-            train(self.training_set)
+            self.model = train(self.training_set)
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 

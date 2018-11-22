@@ -10,6 +10,8 @@ def train(data_cases):
     print("AllDOne" +str(len(data_cases)))
     print("Print Tree")
     printTree(model.treeRoot)
+
+    return model
     
 def recursive(data_cases):
     print("Begin2" +str(len(data_cases)))
