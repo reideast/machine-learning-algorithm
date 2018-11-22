@@ -106,12 +106,49 @@ class Application(tk.Frame):
         self.frame_bottom.grid_rowconfigure(0, weight=1)
         self.frame_bottom.grid_columnconfigure(0, weight=1)
 
-        self.subframe_tree_canvas = tk.Frame(self.frame_bottom)
-        self.subframe_tree_canvas.grid(row=0, column=0, stick="nsew")
+        # Subframe to show results of the model
+        self.subframe_results = tk.Frame(self.frame_bottom)
+        self.subframe_results.grid(row=0, column=0, sticky="nsew")
 
-        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
-        self.tree_canvas.pack()
-        # self.tree_canvas.create_rectangle(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT, fill="white")
+        self.subframe_tree_canvas = tk.Frame(self.subframe_results, bd=2, relief=tk.SUNKEN)
+        self.subframe_tree_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        # self.subframe_tree_canvas.pack()
+        self.subframe_tree_canvas.grid_rowconfigure(0, weight=1)
+        self.subframe_tree_canvas.grid_columnconfigure(0, weight=1)
+
+        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
+        # self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
+        # done below: self.tree_canvas.pack()
+
+        self.scroll_h = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.HORIZONTAL)
+        # self.scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
+        self.scroll_h.grid(row=1, column=0, sticky=tk.E+tk.W)
+        self.scroll_h.config(command=self.tree_canvas.xview)
+
+        self.scroll_v = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.VERTICAL)
+        # self.scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
+        self.scroll_v.grid(row=0, column=1, sticky=tk.N+tk.S)
+        self.scroll_v.config(command=self.tree_canvas.yview)
+
+        self.tree_canvas.config(xscrollcommand=self.scroll_h.set, yscrollcommand=self.scroll_v.set)
+        # self.tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        self.tree_canvas.grid(row=0, column=0, sticky="nsew")
+
+        # TODO: This controls section is NOT working yet
+        self.subframe_results_controls = tk.Frame(self.subframe_results)
+        self.subframe_results_controls.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        # self.subframe_results_controls.grid(row=1, column=0, sticky="nsew")
+
+        self.button_view_results = tk.Button(self.subframe_results_controls)
+        self.button_view_results["text"] = "View Predictions"
+        self.button_view_results["command"] = lambda: messagebox.showinfo("Predictions", "Predictions")
+        self.image_view_results = tk.PhotoImage(file="images/save.png")
+        self.button_view_results["compound"] = tk.LEFT
+        self.button_view_results["image"] = self.image_view_results
+        self.button_save.pack(pack_options_button)
+
+
+        # Subframe with controls to set the column options
 
         self.subframe_columns = tk.Frame(self.frame_bottom)
         self.subframe_columns.grid(row=0, column=0, stick="nsew")
@@ -164,7 +201,7 @@ class Application(tk.Frame):
 
     def show_subframe_tree(self):
         self.disable_subframe_columns()
-        self.subframe_tree_canvas.tkraise()
+        self.subframe_results.tkraise()
 
     def hide_subframe_tree(self):
         pass  # todo: need to disable anything for the tree canvas page?
@@ -203,6 +240,8 @@ class Application(tk.Frame):
             self.cols_radio_buttons.append(radio)
         self.cols_radio_buttons[num_cols - 1].select()  # Select last in list, since many data sets have the final column as the label
 
+        # TODO: Checkbox for each column to mark it as categorical vs. continuous? Will need to rework algorithm s.t. it can handle non-continuous values
+
         # DEBUG:
         if DEBUG and "owls.csv" in self.filename:  # also guards against filename not being set yet
             for idx, name in enumerate(["body-length", "wing-length", "body-width", "wing-width", "type"]):
@@ -236,17 +275,15 @@ class Application(tk.Frame):
             self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
             # print(self.photoimage_img_data)
 
-            print("Image width: %f" % self.photoimage_img_data.width())
-
             # Resize canvas to fit
-            self.tree_canvas.config(width=self.photoimage_img_data.width())
-
+            # self.tree_canvas.config(width=self.photoimage_img_data.width())
 
             # Show graph pane and paint image
             self.show_subframe_tree()
-            self.img_on_canvas = self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
-            # zoom_scale = CANVAS_WIDTH / self.photoimage_img_data.width()
-            # self.tree_canvas.scale(self.img_on_canvas, zoom_scale, zoom_scale, 0, 0)
+            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
+
+            # Reconfigure scrolling area of canvas to fix image
+            self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
