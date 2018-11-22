@@ -276,7 +276,8 @@ class Application(tk.Frame):
             # print(self.photoimage_img_data)
 
             # Resize canvas to fit
-            # self.tree_canvas.config(width=self.photoimage_img_data.width())
+            # TODO DEBUG: Resize window automagically to show whole tree graph
+            self.tree_canvas.config(width=self.photoimage_img_data.width())
 
             # Show graph pane and paint image
             self.show_subframe_tree()
