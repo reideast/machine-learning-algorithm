@@ -16,6 +16,10 @@ def train(data_cases):
 def recursive(data_cases):
     print("Begin2" +str(len(data_cases)))
     tree = Tree()
+
+    Tree.next_debug_id += 1
+    tree.debug_id = Tree.next_debug_id
+
     if len(data_cases)==0:
         tree.isLeaf=True
         tree.predicted="Default" #Todo is this correct???

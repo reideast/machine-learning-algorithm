@@ -6,6 +6,7 @@ pydot example 1
 """
 import pydot # import pydot or you're not going to get anywhere my friend :D
 from classes.Case import Case
+from classes.Model import Tree
 
 def graph_model(model):
     """
@@ -21,15 +22,21 @@ def graph_model(model):
 
     return graph.create_gif(prog="dot")
 
-def __build_tree_graph(node, graph):
-    graph.add_edge(pydot.Edge(__label_node(node), "left"))
-    graph.add_edge(pydot.Edge(__label_node(node), "right"))
+
+def __build_tree_graph(node: Tree, graph: pydot.Graph):
+    if not node.isLeaf:
+        graph.add_edge(pydot.Edge(__label_node(node), __label_node(node.leftChild)))
+        __build_tree_graph(node.leftChild, graph)
+        graph.add_edge(pydot.Edge(__label_node(node), __label_node(node.rightChild)))
+        __build_tree_graph(node.rightChild, graph)
+
 
 def __label_node(node):
     if node.isLeaf:
-        return node.predicted
+        return str(node.debug_id) + ". " + node.predicted
     else:
-        return Case.attributes_names[node.splitAttribute] + "<" + ("%.1f" % node.threshold)
+        return str(node.debug_id) + ". " + Case.attributes_names[node.splitAttribute] + "<" + ("%.1f" % node.threshold)
+
 
 def create_sample_graph():
     # first you create a new graph, you do that with pydot.Dot()
