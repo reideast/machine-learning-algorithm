@@ -3,7 +3,7 @@ from classes.Case import Case
 from about import get_about_message
 from split import clone_spliter
 from train import train
-from graph_tree import create_sample_graph, graph_model
+from graph_tree import graph_model
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, IntVar
@@ -235,7 +235,7 @@ class Application(tk.Frame):
             self.cols_text_boxes.append(text_box)
         for idx in range(num_cols):
             radio = tk.Radiobutton(self.subframe_col_options_inner,
-                                   text="Label", variable=self.cols_radio_var, value=idx)
+                                   text="Label", variable=self.cols_radio_var, value=idx)  # TODO: Rework/rename this so it's more obvious as to purpose. Perhaps a tooltip (?)
             radio.grid(row=2, column=idx)
             self.cols_radio_buttons.append(radio)
         self.cols_radio_buttons[num_cols - 1].select()  # Select last in list, since many data sets have the final column as the label
@@ -264,16 +264,10 @@ class Application(tk.Frame):
         else:
             # DEBUG: Show a graph
 
-            # Made Graph using pydot python objects and return as binary image data
+            # Made Graph using pydot python objects and return as a tk PhotoImage
             # self.binary_img_data = create_sample_graph()
-            self.binary_img_data = graph_model(self.model)
+            self.photoimage_img_data, self.png_img_data = graph_model(self.model)
             # print(self.binary_img_data)
-
-            # Convert to a tkinter picture object
-            self.base64_img_data = base64.standard_b64encode(self.binary_img_data)
-            # print(self.base64_img_data)
-            self.photoimage_img_data = tk.PhotoImage(data=self.base64_img_data)
-            # print(self.photoimage_img_data)
 
             # Resize canvas to fit
             # TODO DEBUG: Resize window automagically to show whole tree graph
@@ -285,6 +279,9 @@ class Application(tk.Frame):
 
             # Reconfigure scrolling area of canvas to fix image
             self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
+
+            # Write PNG file out
+            open("graph.png", "wb").write(self.png_img_data)
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
@@ -332,10 +329,19 @@ class Application(tk.Frame):
             messagebox.showwarning("No file loaded", "Cannot select file attributes: no data file has been loaded")
 
     def train_on_data(self):
-        if self.master_data_set is not "":
+        if self.master_data_set is not None:
+            # TODO: loop below 10 times
+
             self.training_set, self.testing_set = clone_spliter(self.master_data_set)
 
             self.model = train(self.training_set)
+
+            # TODO: Test training data
+
+            # TODO: Build up 10 graph/results view
+
+            # TODO: Switch to first results/graph view
+            # TODO:     Also, make Prev/Next buttons work
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
