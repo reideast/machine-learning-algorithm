@@ -23,3 +23,4 @@ class Tree:
         self.leftChild = None
         self.rightChild = None
         self.debug_id = -1  # DEBUG
+        self.numCases = None

@@ -11,5 +11,5 @@ def clone_spliter(master_data_set):
 
     qty_testing = len(data_set) // TESTING_RATIO
 
-    shuffle(data_set)
+    #shuffle(data_set) #DEBUG for testing and preventing randomness!!
     return data_set[qty_testing:], data_set[:qty_testing]

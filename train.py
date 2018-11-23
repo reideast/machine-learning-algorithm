@@ -17,6 +17,7 @@ def train(data_cases):
 def recursive(data_cases):
     print("Begin2" +str(len(data_cases)))
     tree = Tree()
+    tree.numCases = len(data_cases)
 
     Tree.next_debug_id += 1
     tree.debug_id = Tree.next_debug_id
@@ -114,10 +115,11 @@ def getBestInfoGain(data_cases,attrib):
         pThresholds=[]
         
         for idx in range(len(allAttributeValues)-1):
-            midValue=(allAttributeValues[idx] + allAttributeValues[idx+1]) / 2
-            gain=infoGain(data_cases, attrib, midValue)
-            pInfoGain.append(gain)
-            pThresholds.append(midValue)
+            if allAttributeValues[idx+1] - allAttributeValues[idx]  > 0.0001: #This prevents Threshold equalling a data point if data point is duplicate
+                midValue=(allAttributeValues[idx] + allAttributeValues[idx+1]) / 2
+                gain=infoGain(data_cases, attrib, midValue)
+                pInfoGain.append(gain)
+                pThresholds.append(midValue)
             
         max=-1.0
         best=-1

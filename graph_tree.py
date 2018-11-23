@@ -33,9 +33,9 @@ def __build_tree_graph(node: Tree, graph: pydot.Graph):
 
 def __label_node(node):
     if node.isLeaf:
-        return str(node.debug_id) + ". " + node.predicted
+        return str(node.debug_id) + ". " + node.predicted + "N=" +str(node.numCases)
     else:
-        return str(node.debug_id) + ". " + Case.attributes_names[node.splitAttribute] + "<" + ("%.1f" % node.threshold)
+        return str(node.debug_id) + ". " + Case.attributes_names[node.splitAttribute] + "<" + ("%.1f" % node.threshold)+ "N=" +str(node.numCases)
 
 
 def create_sample_graph():
