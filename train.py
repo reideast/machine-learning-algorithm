@@ -105,39 +105,19 @@ def getBestInfoGain(data_cases,attrib):
         return -1, -1
     else:
         print(attrib)
-#         allAttributeValues=[]
-#         for item in data_cases:
-#             allAttributeValues.append(item.attributes[attrib])
-#             
-#         allAttributeValues.sort()
-#         pInfoGain=[]
-#         pThresholds=[]
-#         
-#         for idx in range(len(allAttributeValues)-1):
-#             midValue=(allAttributeValues[idx] + allAttributeValues[idx+1]) / 2
-#             gain=infoGain(data_cases, attrib, midValue)
-#             pInfoGain.append(gain)
-#             pThresholds.append(midValue)
-        min = data_cases[0].attributes[attrib]
-        max = data_cases[0].attributes[attrib]
-        for case in data_cases:
-            if min > case.attributes[attrib]:
-                min = case.attributes[attrib]  
-            if max < case.attributes[attrib]:
-                max = case.attributes[attrib]
-                
+        allAttributeValues=[]
+        for item in data_cases:
+            allAttributeValues.append(item.attributes[attrib])
+            
+        allAttributeValues.sort()
         pInfoGain=[]
         pThresholds=[]
         
-        step = (max-min)/100
-        current = min
-         
-        for idx in range(99):
-            current+=step
-            midValue=current
+        for idx in range(len(allAttributeValues)-1):
+            midValue=(allAttributeValues[idx] + allAttributeValues[idx+1]) / 2
             gain=infoGain(data_cases, attrib, midValue)
             pInfoGain.append(gain)
-            pThresholds.append(midValue)# TODO Calculate information Gained
+            pThresholds.append(midValue)
             
         max=-1.0
         best=-1
