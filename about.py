@@ -17,3 +17,10 @@ Next by Three Six Five from the Noun Project
 Save by Sophia Bai from the Noun Project
 Info by ProSymbols from the Noun Project
 Data by BomSymbols from the Noun Project"""
+
+
+# TODO:
+# Software Attribution
+# Graphviz https://graphviz.gitlab.io/
+# Pydot https://github.com/pydot/pydot
+# blog post on pydot usage http://pythonhaven.wordpress.com/2009/12/09/generating_graphs_with_pydot

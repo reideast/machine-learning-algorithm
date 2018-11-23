@@ -13,6 +13,7 @@ class Model:
         return ", ".join(self.attributes) + ", label=" + self.label
     
 class Tree:
+    next_debug_id = -1  # DEBUG
     
     def __init__(self):
         self.isLeaf = False
@@ -21,4 +22,4 @@ class Tree:
         self.threshold = None
         self.leftChild = None
         self.rightChild = None
-        
+        self.debug_id = -1  # DEBUG
