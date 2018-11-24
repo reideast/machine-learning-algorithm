@@ -135,17 +135,19 @@ class Application(tk.Frame):
         self.tree_canvas.config(xscrollcommand=self.scroll_h.set, yscrollcommand=self.scroll_v.set)
         self.tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        self.subframe_results_predictions = tk.LabelFrame(self.subframe_results, text="Predictions")
+        self.subframe_results_predictions = tk.LabelFrame(self.subframe_results, text="Predictions", padx=5, pady=5)
         self.subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
+        # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # TODO: Put results Treeview datatable here
-        self.button_view_results = tk.Button(self.subframe_results_predictions)
-        self.button_view_results["text"] = "View Predictions"
-        self.button_view_results["command"] = lambda: messagebox.showinfo("Predictions", "Predictions")
-        self.image_view_results = tk.PhotoImage(file="images/save.png")
-        self.button_view_results["compound"] = tk.LEFT
-        self.button_view_results["image"] = self.image_view_results
-        self.button_view_results.pack(side=tk.TOP)
+        self.scrollframe_table_predictions = tk.Frame(self.subframe_results_predictions, bd=2, relief=tk.SUNKEN)
+        self.table_predictions = ttk.Treeview(self.scrollframe_table_predictions, height=5, show="headings", columns="message_column")  # Height is number of rows
+        self.table_predictions.heading("message_column", text="Predictions not loaded yet")
+        self.table_predictions.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.scrollbar_table_prediction = tk.Scrollbar(self.scrollframe_table_predictions)
+        self.scrollbar_table_prediction.pack(side=tk.RIGHT, fill=tk.Y)
+        self.scrollframe_table_predictions.pack(fill=tk.BOTH, expand=True)
+        self.table_predictions.config(yscrollcommand=self.scrollbar_table_prediction.set)
+        self.scrollbar_table_prediction.config(command=self.table_predictions.yview)
 
         # ##################   Frame Bottom: Set Input File Options   ################## #
         # Subframe with controls to set the column options
