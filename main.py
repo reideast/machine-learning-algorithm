@@ -6,7 +6,7 @@ from train import train
 from graph_tree import graph_model
 
 import tkinter as tk
-from tkinter import filedialog, messagebox, IntVar
+from tkinter import filedialog, messagebox, IntVar, ttk
 
 import logging
 import os
@@ -166,10 +166,14 @@ class Application(tk.Frame):
         pack_options_button["side"] = tk.TOP
         self.button_process_csv.pack(pack_options_button)
 
-        self.label_processed_csv = tk.Label(self.subframe_columns,
-                                            text="Data set loaded",
-                                            font="TkDefaultFont 8 italic")
-        # Not packed, so it is hidden
+        self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns="message_column")
+        # self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings")
+        # self.table_loaded_input["columns"] = ["message_column"]
+        self.table_loaded_input.heading("message_column", text="Message")
+        self.table_loaded_input.insert("", "end", "default")
+        self.table_loaded_input.set("default", "message_column", "Datafile not loaded yet")
+        # self.table_loaded_input["displaycolumns"] = ["message_column"]
+        self.table_loaded_input.pack({"padx": 50, "pady": 20})
 
         self.add_col_options()  # Add default options, no data
         self.show_subframe_columns()
@@ -292,7 +296,14 @@ class Application(tk.Frame):
             self.filename = chosen_file  # Temp variable used so cancelling the dialog when a file had already been loaded will not prevent proceeding
 
             self.is_file_prepared = False
-            self.label_processed_csv.pack_forget()  # Essentially, hide
+
+            self.table_loaded_input.delete(*self.table_loaded_input.get_children())
+            # self.table_loaded_input["columns"] = ["message_column"]
+            # self.table_loaded_input.heading("message_column", text="Message")
+            self.table_loaded_input.insert("", "end", "default")
+            self.table_loaded_input.set("default", "#1", "Datafile not loaded yet BLAH")
+            # self.table_loaded_input["displaycolumns"] = ["message_column"]
+
             Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
             logging.debug("Preparing to choose attributes for data file: " + self.filename)
@@ -321,8 +332,28 @@ class Application(tk.Frame):
                 print("Metadata for Case: (label col num=" + str(Case.label_column) + ")")
                 print(", ".join(Case.attributes_names) + ", label=" + Case.label_name)
 
+            # Parse file into list of python objects
             self.master_data_set = parse_csv(self.filename)
-            self.label_processed_csv.pack()
+
+            # Show datatable of loaded data
+            # Create column headers
+            # self.table_loaded_input["columns"] = ()
+            col_indices = list(range(len(Case.attributes_names) + 1))
+            self.table_loaded_input["columns"] = col_indices  # Make tuple of columns
+            for idx, item in enumerate(Case.attributes_names + [Case.label_name]):  # Label columns
+                self.table_loaded_input.column(str(idx), minwidth=10, width=100)
+                self.table_loaded_input.heading(str(idx), text=item, anchor="w")
+            self.table_loaded_input["displaycolumns"] = col_indices  # Only show indicated columns
+
+            # Fill table with data from file
+            # TODO: insert all data rows
+            if self.table_loaded_input.exists("default"):
+                self.table_loaded_input.delete("default")
+            for idx, case in enumerate(self.master_data_set):
+                self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="odd" if idx % 2 == 1 else "")
+            self.table_loaded_input.tag_configure("odd", background="#eeeeee")
+
+            # Enable next step in UI flow
             self.button_train["state"] = tk.NORMAL
             self.is_file_prepared = True
         else:
@@ -344,6 +375,9 @@ class Application(tk.Frame):
             # TODO:     Also, make Prev/Next buttons work
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
+
+    def show_results(self):
+        pass
 
 
 DEBUG = True
