@@ -167,12 +167,9 @@ class Application(tk.Frame):
         self.button_process_csv.pack(pack_options_button)
 
         self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns="message_column")
-        # self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings")
-        # self.table_loaded_input["columns"] = ["message_column"]
         self.table_loaded_input.heading("message_column", text="Message")
-        self.table_loaded_input.insert("", "end", "default")
-        self.table_loaded_input.set("default", "message_column", "Datafile not loaded yet")
-        # self.table_loaded_input["displaycolumns"] = ["message_column"]
+        self.table_loaded_input.insert("", "end", "message_row")
+        self.table_loaded_input.set("message_row", "message_column", "Datafile not loaded yet")
         self.table_loaded_input.pack({"padx": 50, "pady": 20})
 
         self.add_col_options()  # Add default options, no data
@@ -297,12 +294,12 @@ class Application(tk.Frame):
 
             self.is_file_prepared = False
 
-            self.table_loaded_input.delete(*self.table_loaded_input.get_children())
-            # self.table_loaded_input["columns"] = ["message_column"]
-            # self.table_loaded_input.heading("message_column", text="Message")
-            self.table_loaded_input.insert("", "end", "default")
-            self.table_loaded_input.set("default", "#1", "Datafile not loaded yet BLAH")
-            # self.table_loaded_input["displaycolumns"] = ["message_column"]
+            self.table_loaded_input.destroy()
+            self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns="message_column")
+            self.table_loaded_input.heading("message_column", text="Message")
+            self.table_loaded_input.insert("", "end", "message_row")
+            self.table_loaded_input.set("message_row", "message_column", "Full dataset not yet loaded")
+            self.table_loaded_input.pack({"padx": 50, "pady": 20})
 
             Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
@@ -336,22 +333,19 @@ class Application(tk.Frame):
             self.master_data_set = parse_csv(self.filename)
 
             # Show datatable of loaded data
+            self.table_loaded_input.destroy()
+            col_indices = list(range(len(Case.attributes_names) + 1))  # Make tuple of columns
+            self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns=col_indices)
+            self.table_loaded_input.pack({"padx": 50, "pady": 20})
             # Create column headers
-            # self.table_loaded_input["columns"] = ()
-            col_indices = list(range(len(Case.attributes_names) + 1))
-            self.table_loaded_input["columns"] = col_indices  # Make tuple of columns
             for idx, item in enumerate(Case.attributes_names + [Case.label_name]):  # Label columns
                 self.table_loaded_input.column(str(idx), minwidth=10, width=100)
                 self.table_loaded_input.heading(str(idx), text=item, anchor="w")
-            self.table_loaded_input["displaycolumns"] = col_indices  # Only show indicated columns
 
             # Fill table with data from file
-            # TODO: insert all data rows
-            if self.table_loaded_input.exists("default"):
-                self.table_loaded_input.delete("default")
+            self.table_loaded_input.tag_configure("even", background="#eeeeee")
             for idx, case in enumerate(self.master_data_set):
-                self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="odd" if idx % 2 == 1 else "")
-            self.table_loaded_input.tag_configure("odd", background="#eeeeee")
+                self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="even" if idx % 2 == 0 else "")
 
             # Enable next step in UI flow
             self.button_train["state"] = tk.NORMAL
