@@ -166,11 +166,15 @@ class Application(tk.Frame):
         pack_options_button["side"] = tk.TOP
         self.button_process_csv.pack(pack_options_button)
 
-        self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns="message_column")
-        self.table_loaded_input.heading("message_column", text="Message")
+        self.input_table_frame = tk.Frame(self.subframe_columns, bd=2, relief=tk.SUNKEN)
+        self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns="message_column")
+        ttk.Style().layout("Treeview", [])  # Setting the style of all Treeview widgets successfully removes the border to better fit w/ the scrollbar
         self.table_loaded_input.insert("", "end", "message_row")
         self.table_loaded_input.set("message_row", "message_column", "Datafile not loaded yet")
-        self.table_loaded_input.pack({"padx": 50, "pady": 20})
+        self.table_loaded_input.pack(side=tk.LEFT)
+        self.table_scrollbar = tk.Scrollbar(self.input_table_frame)
+        self.table_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.input_table_frame.pack({"padx": 50, "pady": 20})
 
         self.add_col_options()  # Add default options, no data
         self.show_subframe_columns()
@@ -295,11 +299,10 @@ class Application(tk.Frame):
             self.is_file_prepared = False
 
             self.table_loaded_input.destroy()
-            self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns="message_column")
-            self.table_loaded_input.heading("message_column", text="Message")
+            self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns="message_column")
             self.table_loaded_input.insert("", "end", "message_row")
             self.table_loaded_input.set("message_row", "message_column", "Full dataset not yet loaded")
-            self.table_loaded_input.pack({"padx": 50, "pady": 20})
+            self.table_loaded_input.pack(side=tk.LEFT)
 
             Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
@@ -335,8 +338,8 @@ class Application(tk.Frame):
             # Show datatable of loaded data
             self.table_loaded_input.destroy()
             col_indices = list(range(len(Case.attributes_names) + 1))  # Make tuple of columns
-            self.table_loaded_input = ttk.Treeview(self.subframe_columns, show="headings", columns=col_indices)
-            self.table_loaded_input.pack({"padx": 50, "pady": 20})
+            self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns=col_indices)
+            self.table_loaded_input.pack(side=tk.LEFT)
             # Create column headers
             for idx, item in enumerate(Case.attributes_names + [Case.label_name]):  # Label columns
                 self.table_loaded_input.column(str(idx), minwidth=10, width=100)
@@ -346,6 +349,10 @@ class Application(tk.Frame):
             self.table_loaded_input.tag_configure("even", background="#eeeeee")
             for idx, case in enumerate(self.master_data_set):
                 self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="even" if idx % 2 == 0 else "")
+
+            # Reconnect scrollbar events to new Treeview object
+            self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
+            self.table_scrollbar.config(command=self.table_loaded_input.yview)
 
             # Enable next step in UI flow
             self.button_train["state"] = tk.NORMAL
