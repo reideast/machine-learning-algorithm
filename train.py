@@ -113,8 +113,11 @@ def getBestInfoGain(data_cases,attrib):
         allAttributeValues.sort()
         pInfoGain=[]
         pThresholds=[]
-        
+
+        print([case.to_string() for case in data_cases])
         for idx in range(len(allAttributeValues)-1):
+            print("pair of potential attributes: %f, %f" % (allAttributeValues[idx], allAttributeValues[idx+1]))
+            # TODO: This causes the algo to crash if ALL attributes under examination are the same
             if allAttributeValues[idx+1] - allAttributeValues[idx]  > 0.0001: #This prevents Threshold equalling a data point if data point is duplicate
                 midValue=(allAttributeValues[idx] + allAttributeValues[idx+1]) / 2
                 gain=infoGain(data_cases, attrib, midValue)
@@ -129,7 +132,9 @@ def getBestInfoGain(data_cases,attrib):
                 best = idx
         
         
-       
+
+        print(pInfoGain)
+        print(pThresholds)
         return pInfoGain[best],pThresholds[best]
         
 def countClassesInSet(data_cases):

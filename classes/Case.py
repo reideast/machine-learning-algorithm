@@ -27,4 +27,4 @@ class Case:
 
     # DEBUG:
     def to_string(self):
-        return ", ".join(self.attributes) + ", label=" + self.label
+        return ", ".join(str(attribute) for attribute in self.attributes) + ", label=" + self.label
