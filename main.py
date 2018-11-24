@@ -184,6 +184,8 @@ class Application(tk.Frame):
         self.table_scrollbar = tk.Scrollbar(self.input_table_frame)
         self.table_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.input_table_frame.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
+        self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
+        self.table_scrollbar.config(command=self.table_loaded_input.yview)
 
         # ##################   Finalise Window Building   ################## #
         self.add_col_options()  # Add default options, no data
