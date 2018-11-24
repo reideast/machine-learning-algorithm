@@ -91,7 +91,7 @@ class Application(tk.Frame):
         # self.button_save["state"] = tk.DISABLED
         # self.button_save["command"] = lambda: messagebox.showinfo("Save", "Save")
         self.button_save["text"] = "flip page 2"  # DEBUG
-        self.button_save["command"] = lambda: self.show_subframe_tree()  # DEBUG
+        self.button_save["command"] = lambda: self.show_subframe_results()  # DEBUG
         self.image_save = tk.PhotoImage(file="images/save.png")
         self.button_save["compound"] = tk.LEFT
         self.button_save["image"] = self.image_save
@@ -218,7 +218,7 @@ class Application(tk.Frame):
             radio["state"] = tk.NORMAL
         self.button_process_csv["state"] = tk.NORMAL
 
-    def show_subframe_tree(self):
+    def show_subframe_results(self):
         self.disable_subframe_columns()
         self.subframe_results.tkraise()
 
@@ -287,7 +287,7 @@ class Application(tk.Frame):
             self.photoimage_img_data, self.png_img_data = graph_model(self.model)
 
             # Show graph pane and paint image
-            self.show_subframe_tree()
+            self.show_subframe_results()
             self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
 
             # Reconfigure scrolling area of canvas to the area of the current graph
@@ -372,10 +372,14 @@ class Application(tk.Frame):
 
     def train_on_data(self):
         if self.master_data_set is not None:
+            # TODO: Need to implement some kind of GUI spinner while training is ongoing?
+
             # TODO: loop below 10 times
 
+            # Get a randomised split of the data set, cloned so the master set remains ready for re-use
             self.training_set, self.testing_set = clone_spliter(self.master_data_set)
 
+            # Build that model!
             self.model = train(self.training_set)
 
             # TODO: Test training data
@@ -383,12 +387,32 @@ class Application(tk.Frame):
             # TODO: Build up 10 graph/results view
 
             # TODO: Switch to first results/graph view
+            self.show_subframe_results()
+
+            # Make Graph using pydot python objects and return as a tk PhotoImage & PNG
+            self.photoimage_img_data, self.png_img_data = graph_model(self.model)
+
+            # Paint image
+            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
+            # Reconfigure scrolling area of canvas to the area of the current graph
+            self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
+
+            # Write score
+
+            # Put results into datatable
+
             # TODO:     Also, make Prev/Next buttons work
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
     def show_results(self):
         pass
+
+    def save_results(self):
+        # TODO: this is just a stub
+        # Write PNG file out
+        open("graph.png", "wb").write(self.png_img_data)
+
 
 
 DEBUG = True

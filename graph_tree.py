@@ -13,6 +13,7 @@ def graph_model(model: Model) -> (PhotoImage, bytes):
              Note: PNG img can be written with: open("outfile.png", "wb").write(png_file)
     """
     graph = pydot.Dot(graph_type="graph")
+    graph.set_node_defaults(fontsize="10", width=0, height=0, margin="0.11,0.05")
 
     # Build up the tree recursively, seeded by root node
     root_node = __make_node(model.treeRoot)
@@ -61,12 +62,12 @@ def __make_node(node: Tree) -> pydot.Node:
         # node_label = node.predicted
     else:
         # node_label = "%d. %s < %.1f\nn=%d" % (node.debug_id, Case.attributes_names[node.splitAttribute], node.threshold, node.numCases)
-        node_label = "%s\nn=%d" % (Case.attributes_names[node.splitAttribute], node.numCases)
-        # node_label = Case.attributes_names[node.splitAttribute]
+        # node_label = "%s\nn=%d" % (Case.attributes_names[node.splitAttribute], node.numCases)
+        node_label = Case.attributes_names[node.splitAttribute]
 
     # Build node
     return pydot.Node(str(node.debug_id),
                       label=node_label,
-                      style="filled",
-                      shape="ellipse" if node.isLeaf else "box",  # DEBUG: shapes https://www.graphviz.org/doc/info/shapes.html#polygon
+                      style="rounded, filled" if node.isLeaf else "filled",
+                      shape="box" if node.isLeaf else "box",  # DEBUG: shapes https://www.graphviz.org/doc/info/shapes.html#polygon
                       fillcolor="#e2fff1" if node.isLeaf else "#e2f1ff")
