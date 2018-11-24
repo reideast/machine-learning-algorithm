@@ -10,14 +10,13 @@ from tkinter import filedialog, messagebox, IntVar, ttk
 
 import logging
 import os
-import base64
 
 
 class Application(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
         self.winfo_toplevel().title("Decision Tree Machine Learning")
-        self.pack()
+        self.pack(fill=tk.BOTH, expand=True)
 
         self.filename = ""
         self.is_file_prepared = False
@@ -116,7 +115,8 @@ class Application(tk.Frame):
         self.subframe_tree_canvas.grid_rowconfigure(0, weight=1)
         self.subframe_tree_canvas.grid_columnconfigure(0, weight=1)
 
-        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
+        # self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
+        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
         # self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
         # done below: self.tree_canvas.pack()
 
@@ -134,7 +134,6 @@ class Application(tk.Frame):
         # self.tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
         self.tree_canvas.grid(row=0, column=0, sticky="nsew")
 
-        # TODO: This controls section is NOT working yet
         self.subframe_results_controls = tk.Frame(self.subframe_results)
         self.subframe_results_controls.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         # self.subframe_results_controls.grid(row=1, column=0, sticky="nsew")
@@ -145,20 +144,26 @@ class Application(tk.Frame):
         self.image_view_results = tk.PhotoImage(file="images/save.png")
         self.button_view_results["compound"] = tk.LEFT
         self.button_view_results["image"] = self.image_view_results
-        self.button_save.pack(pack_options_button)
-
+        self.button_view_results.pack(pack_options_button)
 
         # Subframe with controls to set the column options
-
         self.subframe_columns = tk.Frame(self.frame_bottom)
-        self.subframe_columns.grid(row=0, column=0, stick="nsew")
+        self.subframe_columns.grid(row=0, column=0, sticky="nsew")
 
-        self.subframe_col_options = tk.Frame(self.subframe_columns)
+        self.subframe_column_name_inputs_area = tk.LabelFrame(self.subframe_columns, text="Choose Column Names and Predicted Class", padx=5, pady=5)
+        self.subframe_column_name_inputs_area.pack(padx=10, pady=10, fill=tk.X)
+
+        # Build the subframe which will contain the text input boxes to input column names
+        self.subframe_col_options = tk.Frame(self.subframe_column_name_inputs_area)
         self.subframe_col_options.pack()
         self.subframe_col_options_inner = None
+        self.cols_labels = None
+        self.cols_text_boxes = None
+        self.cols_radio_buttons = None
+        self.cols_radio_var = None
 
-        self.button_process_csv = tk.Button(self.subframe_columns)
-        self.button_process_csv["text"] = "Read Whole CSV File"
+        self.button_process_csv = tk.Button(self.subframe_column_name_inputs_area)
+        self.button_process_csv["text"] = "Load CSV File"
         self.button_process_csv["command"] = self.save_file_attributes
         self.image_process_csv = tk.PhotoImage(file="images/data.png")
         self.button_process_csv["compound"] = tk.LEFT
@@ -166,15 +171,17 @@ class Application(tk.Frame):
         pack_options_button["side"] = tk.TOP
         self.button_process_csv.pack(pack_options_button)
 
-        self.input_table_frame = tk.Frame(self.subframe_columns, bd=2, relief=tk.SUNKEN)
+        self.subframe_inputted_file_area = tk.LabelFrame(self.subframe_columns, text="Data File", padx=5, pady=5)
+        self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        self.input_table_frame = tk.Frame(self.subframe_inputted_file_area, bd=2, relief=tk.SUNKEN)
         self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns="message_column")
+        self.table_loaded_input.heading("message_column", text="Datafile not loaded yet")
         ttk.Style().layout("Treeview", [])  # Setting the style of all Treeview widgets successfully removes the border to better fit w/ the scrollbar
-        self.table_loaded_input.insert("", "end", "message_row")
-        self.table_loaded_input.set("message_row", "message_column", "Datafile not loaded yet")
-        self.table_loaded_input.pack(side=tk.LEFT)
+        self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.table_scrollbar = tk.Scrollbar(self.input_table_frame)
         self.table_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.input_table_frame.pack({"padx": 50, "pady": 20})
+        self.input_table_frame.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
 
         self.add_col_options()  # Add default options, no data
         self.show_subframe_columns()
@@ -274,9 +281,9 @@ class Application(tk.Frame):
             self.photoimage_img_data, self.png_img_data = graph_model(self.model)
             # print(self.binary_img_data)
 
-            # Resize canvas to fit
-            # TODO DEBUG: Resize window automagically to show whole tree graph
-            self.tree_canvas.config(width=self.photoimage_img_data.width())
+            # # Resize canvas to fit
+            # # TODO DEBUG: Resize window automagically to show whole tree graph
+            # self.tree_canvas.config(width=self.photoimage_img_data.width())
 
             # Show graph pane and paint image
             self.show_subframe_tree()
@@ -300,9 +307,8 @@ class Application(tk.Frame):
 
             self.table_loaded_input.destroy()
             self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns="message_column")
-            self.table_loaded_input.insert("", "end", "message_row")
-            self.table_loaded_input.set("message_row", "message_column", "Full dataset not yet loaded")
-            self.table_loaded_input.pack(side=tk.LEFT)
+            self.table_loaded_input.heading("message_column", text="Full dataset not yet loaded")
+            self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
             Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
@@ -339,7 +345,7 @@ class Application(tk.Frame):
             self.table_loaded_input.destroy()
             col_indices = list(range(len(Case.attributes_names) + 1))  # Make tuple of columns
             self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns=col_indices)
-            self.table_loaded_input.pack(side=tk.LEFT)
+            self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             # Create column headers
             for idx, item in enumerate(Case.attributes_names + [Case.label_name]):  # Label columns
                 self.table_loaded_input.column(str(idx), minwidth=10, width=100)
@@ -389,5 +395,7 @@ CANVAS_WIDTH = 600
 CANVAS_HEIGHT = 600
 
 root = tk.Tk()
+root.minsize(1, 700)  # Must be at least this tall
+# root.geometry("1x700")  # DEBUG: weird, very skinny
 master_app = Application(master=root)
 master_app.mainloop()
