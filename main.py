@@ -114,49 +114,46 @@ class Application(tk.Frame):
         self.subframe_results = tk.Frame(self.frame_bottom)
         self.subframe_results.grid(row=0, column=0, sticky="nsew")
 
-        self.subframe_tree_canvas = tk.Frame(self.subframe_results, bd=2, relief=tk.SUNKEN)
+        self.canvas_area = tk.LabelFrame(self.subframe_results, text="Model", padx=5, pady=5)
+        self.canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
+
+        self.subframe_tree_canvas = tk.Frame(self.canvas_area, bd=2, relief=tk.SUNKEN)
         self.subframe_tree_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        # self.subframe_tree_canvas.pack()
         self.subframe_tree_canvas.grid_rowconfigure(0, weight=1)
         self.subframe_tree_canvas.grid_columnconfigure(0, weight=1)
 
-        # self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
         self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
-        # self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
-        # done below: self.tree_canvas.pack()
 
         self.scroll_h = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.HORIZONTAL)
-        # self.scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
-        self.scroll_h.grid(row=1, column=0, sticky=tk.E+tk.W)
+        self.scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
         self.scroll_h.config(command=self.tree_canvas.xview)
 
         self.scroll_v = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.VERTICAL)
-        # self.scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
-        self.scroll_v.grid(row=0, column=1, sticky=tk.N+tk.S)
+        self.scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
         self.scroll_v.config(command=self.tree_canvas.yview)
 
         self.tree_canvas.config(xscrollcommand=self.scroll_h.set, yscrollcommand=self.scroll_v.set)
-        # self.tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
-        self.tree_canvas.grid(row=0, column=0, sticky="nsew")
+        self.tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        self.subframe_results_controls = tk.Frame(self.subframe_results)
-        self.subframe_results_controls.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        # self.subframe_results_controls.grid(row=1, column=0, sticky="nsew")
+        self.subframe_results_predictions = tk.LabelFrame(self.subframe_results, text="Predictions")
+        self.subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
 
-        self.button_view_results = tk.Button(self.subframe_results_controls)
+        # TODO: Put results Treeview datatable here
+        self.button_view_results = tk.Button(self.subframe_results_predictions)
         self.button_view_results["text"] = "View Predictions"
         self.button_view_results["command"] = lambda: messagebox.showinfo("Predictions", "Predictions")
         self.image_view_results = tk.PhotoImage(file="images/save.png")
         self.button_view_results["compound"] = tk.LEFT
         self.button_view_results["image"] = self.image_view_results
-        self.button_view_results.pack(pack_options_button)
+        self.button_view_results.pack(side=tk.TOP)
 
+        # ##################   Frame Bottom: Set Input File Options   ################## #
         # Subframe with controls to set the column options
         self.subframe_columns = tk.Frame(self.frame_bottom)
         self.subframe_columns.grid(row=0, column=0, sticky="nsew")
 
-        self.subframe_column_name_inputs_area = tk.LabelFrame(self.subframe_columns, text="Choose Column Names and Predicted Class", padx=5, pady=5)
-        self.subframe_column_name_inputs_area.pack(padx=10, pady=10, fill=tk.X)
+        self.subframe_column_name_inputs_area = tk.LabelFrame(self.subframe_columns, text="Choose Column Names and Predicted Class")
+        self.subframe_column_name_inputs_area.pack(padx=10, fill=tk.X)
 
         # Build the subframe which will contain the text input boxes to input column names
         self.subframe_col_options = tk.Frame(self.subframe_column_name_inputs_area)
@@ -188,6 +185,7 @@ class Application(tk.Frame):
         self.table_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.input_table_frame.pack(padx=20, pady=10, fill=tk.BOTH, expand=True)
 
+        # ##################   Finalise Window Building   ################## #
         self.add_col_options()  # Add default options, no data
         self.show_subframe_columns()
 
@@ -282,19 +280,13 @@ class Application(tk.Frame):
             # DEBUG: Show a graph
 
             # Made Graph using pydot python objects and return as a tk PhotoImage
-            # self.binary_img_data = create_sample_graph()
             self.photoimage_img_data, self.png_img_data = graph_model(self.model)
-            # print(self.binary_img_data)
-
-            # # Resize canvas to fit
-            # # TODO DEBUG: Resize window automagically to show whole tree graph
-            # self.tree_canvas.config(width=self.photoimage_img_data.width())
 
             # Show graph pane and paint image
             self.show_subframe_tree()
             self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
 
-            # Reconfigure scrolling area of canvas to fix image
+            # Reconfigure scrolling area of canvas to the area of the current graph
             self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
 
             # Write PNG file out
@@ -318,6 +310,9 @@ class Application(tk.Frame):
             self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns="message_column")
             self.table_loaded_input.heading("message_column", text="Full dataset not yet loaded")
             self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            # Reconnect scrollbar events to new Treeview object
+            self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
+            self.table_scrollbar.config(command=self.table_loaded_input.yview)
 
             Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
@@ -342,10 +337,6 @@ class Application(tk.Frame):
                     Case.label_name = value
                 else:
                     Case.attributes_names.append(value)
-
-            if DEBUG:
-                print("Metadata for Case: (label col num=" + str(Case.label_column) + ")")
-                print(", ".join(Case.attributes_names) + ", label=" + Case.label_name)
 
             # Parse file into list of python objects
             self.master_data_set = parse_csv(self.filename)
