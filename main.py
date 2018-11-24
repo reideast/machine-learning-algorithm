@@ -43,6 +43,11 @@ class Application(tk.Frame):
         self.image_cheat_graph = tk.PhotoImage(file="images/data.png")
         self.button_cheat_graph["image"] = self.image_cheat_graph
         self.button_cheat_graph.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        self.button_cheat_both = tk.Button(self.frame_controls)
+        self.button_cheat_both["command"] = self.cheater_shortcut_both
+        self.image_cheat_both = tk.PhotoImage(file="images/next.png")
+        self.button_cheat_both["image"] = self.image_cheat_both
+        self.button_cheat_both.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
 
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
@@ -294,6 +299,10 @@ class Application(tk.Frame):
 
             # Write PNG file out
             open("graph.png", "wb").write(self.png_img_data)
+
+    def cheater_shortcut_both(self):
+        self.cheater_shortcut()
+        self.cheater_shortcut_graph()
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
