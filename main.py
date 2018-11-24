@@ -3,6 +3,7 @@ from classes.Case import Case
 from about import get_about_message
 from split import clone_spliter
 from train import train
+from test import test, score
 from graph_tree import graph_model
 
 import tkinter as tk
@@ -139,13 +140,16 @@ class Application(tk.Frame):
         self.subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
         # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
+        self.label_prediction_score = tk.Label(text="insert-predictions-here", font=("TkDefaultFont", 18))
+        self.label_prediction_score.pack(side=tk.LEFT)
+
         self.scrollframe_table_predictions = tk.Frame(self.subframe_results_predictions, bd=2, relief=tk.SUNKEN)
         self.table_predictions = ttk.Treeview(self.scrollframe_table_predictions, height=5, show="headings", columns="message_column")  # Height is number of rows
         self.table_predictions.heading("message_column", text="Predictions not loaded yet")
         self.table_predictions.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scrollbar_table_prediction = tk.Scrollbar(self.scrollframe_table_predictions)
         self.scrollbar_table_prediction.pack(side=tk.RIGHT, fill=tk.Y)
-        self.scrollframe_table_predictions.pack(fill=tk.BOTH, expand=True)
+        self.scrollframe_table_predictions.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         self.table_predictions.config(yscrollcommand=self.scrollbar_table_prediction.set)
         self.scrollbar_table_prediction.config(command=self.table_predictions.yview)
 
@@ -382,7 +386,15 @@ class Application(tk.Frame):
             # Build that model!
             self.model = train(self.training_set)
 
-            # TODO: Test training data
+            # Test on the holdout set
+            print("DEBUG: testing set")
+            test(self.model, self.testing_set)
+            self.test_score = score(self.testing_set)
+
+            # DEBUG: Also score the training set, which reveals confidence in the algorithm
+            print("DEBUG: training set")
+            test(self.model, self.training_set)
+            self.train_score = score(self.training_set)
 
             # TODO: Build up 10 graph/results view
 
@@ -398,6 +410,7 @@ class Application(tk.Frame):
             self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
 
             # Write score
+            self.label_prediction_score["text"] = "Predictions\n%.1f%%" % (self.test_score * 100)
 
             # Put results into datatable
 
