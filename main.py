@@ -261,7 +261,7 @@ class Application(tk.Frame):
             label.grid(row=0, column=idx)
             self.cols_labels.append(label)
         for idx in range(num_cols):
-            text_box = tk.Entry(self.subframe_col_options_inner, width=15)
+            text_box = tk.Entry(self.subframe_col_options_inner, width=(90 // num_cols))
             text_box.grid(row=1, column=idx)
             self.cols_text_boxes.append(text_box)
         for idx in range(num_cols):
@@ -364,7 +364,7 @@ class Application(tk.Frame):
             self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             # Create column headers
             for idx, item in enumerate(Case.attributes_names + [Case.label_name]):  # Label columns
-                self.table_loaded_input.column(str(idx), minwidth=10, width=100)
+                self.table_loaded_input.column(str(idx), minwidth=5, width=50)
                 self.table_loaded_input.heading(str(idx), text=item, anchor="w")
 
             # Fill table with data from file
