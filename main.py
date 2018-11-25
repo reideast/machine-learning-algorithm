@@ -420,7 +420,28 @@ class Application(tk.Frame):
             self.label_training_accuracy["text"] = "Testing Acc.: %.1f%%" % (self.train_score * 100)
 
             # Put results into datatable
-
+            self.table_predictions.destroy()
+            col_indices = list(range(len(Case.attributes_names) + 2))  # Make tuple of columns
+            self.table_predictions = ttk.Treeview(self.scrollframe_table_predictions, height=5, show="headings", columns=col_indices)
+            self.table_predictions.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+            # Create column headers
+            for idx, item in enumerate(Case.attributes_names):
+                self.table_predictions.column(str(idx), minwidth=5, width=50)
+                self.table_predictions.heading(str(idx), text=item, anchor="w")
+            for idx, item in enumerate([Case.label_name, "Predicted"]):
+                self.table_predictions.column(str(idx + len(Case.attributes_names)), minwidth=10, width=100)
+                self.table_predictions.heading(str(idx + len(Case.attributes_names)), text=item, anchor="w")
+            # Create table contents
+            self.table_predictions.tag_configure("even", background="#eeeeee")
+            self.table_predictions.tag_configure("mismatchEven", background="#eeeeee", foreground="#cc0000")
+            self.table_predictions.tag_configure("mismatchOdd", foreground="#cc0000")
+            for idx, case in enumerate(self.testing_set):
+                self.table_predictions.insert("", "end", values=[item for item in case.attributes + [case.label, case.predicted]],
+                                              tags="mismatch" + ("Even" if idx % 2 == 0 else "Odd") if case.predicted != case.label else ("even" if idx % 2 == 0 else "odd")
+                                              )
+            # Reconnect scrollbar events to new Treeview object
+            self.table_predictions.config(yscrollcommand=self.scrollbar_table_prediction.set)
+            self.scrollbar_table_prediction.config(command=self.table_predictions.yview)
 
             # TODO:     Also, make Prev/Next buttons work
         else:
