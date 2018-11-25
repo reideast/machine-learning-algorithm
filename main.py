@@ -146,9 +146,9 @@ class Application(tk.Frame):
         self.label_prediction_score.pack()
 
         # DEBUG: accuracy of training set
-        self.subframe_training_accuracy = tk.LabelFrame(self.subframe_results_predictions, text="Training Accuracy", padx=5, pady=5)
-        self.subframe_training_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
-        self.label_training_accuracy = tk.Label(self.subframe_training_accuracy, text="xx.x%", font=("TkDefaultFont", 16), justify=tk.LEFT)
+        # self.subframe_training_accuracy = tk.LabelFrame(self.subframe_results_predictions, text="Training Accuracy", padx=5, pady=5)
+        # self.subframe_training_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
+        self.label_training_accuracy = tk.Label(self.subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 10), justify=tk.LEFT)
         self.label_training_accuracy.pack()
 
         self.scrollframe_table_predictions = tk.Frame(self.subframe_results_predictions, bd=2, relief=tk.SUNKEN)
@@ -417,9 +417,10 @@ class Application(tk.Frame):
 
             # Write score
             self.label_prediction_score["text"] = "%.1f%%" % (self.test_score * 100)
-            self.label_training_accuracy["text"] = "%.1f%%" % (self.train_score * 100)
+            self.label_training_accuracy["text"] = "Testing Acc.: %.1f%%" % (self.train_score * 100)
 
             # Put results into datatable
+
 
             # TODO:     Also, make Prev/Next buttons work
         else:

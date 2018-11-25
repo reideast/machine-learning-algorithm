@@ -58,8 +58,11 @@ def __make_node(node: Tree) -> pydot.Node:
     # Build label
     if node.isLeaf:
         # node_label = "%d. %s\nn=%d" % (node.debug_id, node.predicted, node.numCases)
-        node_label = "%s\nn=%d" % (node.predicted, node.numCases)
-        # node_label = node.predicted
+        if node.numCasesMajorityClass == -1:
+            # node_label = "%s\n(n=%d)" % (node.predicted, node.numCases)
+            node_label = node.predicted
+        else:
+            node_label = "%s\n%.1f%% (%d/%d)" % (node.predicted, (100 * node.numCasesMajorityClass / node.numCases), node.numCasesMajorityClass, node.numCases)
     else:
         # node_label = "%d. %s < %.1f\nn=%d" % (node.debug_id, Case.attributes_names[node.splitAttribute], node.threshold, node.numCases)
         # node_label = "%s\nn=%d" % (Case.attributes_names[node.splitAttribute], node.numCases)

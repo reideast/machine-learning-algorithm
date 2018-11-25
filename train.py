@@ -52,7 +52,8 @@ def recursive(data_cases):
             if item > max:
                 max=item
                 maxIndex=idx
-        tree.predicted = list(countClasses.keys())[maxIndex]+"*****Todo*****"
+        tree.predicted = list(countClasses.keys())[maxIndex]
+        tree.numCasesMajorityClass = max
         print("No more Attributes")
         return tree              
     
