@@ -123,7 +123,7 @@ class Application(tk.Frame):
         self.subframe_tree_canvas.grid_rowconfigure(0, weight=1)
         self.subframe_tree_canvas.grid_columnconfigure(0, weight=1)
 
-        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT))
+        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="white")
 
         self.scroll_h = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.HORIZONTAL)
         self.scroll_h.pack(side=tk.BOTTOM, fill=tk.X)

@@ -44,7 +44,7 @@ def __build_tree_graph(node: Tree, this_node: pydot.Node, graph: pydot.Graph):
 
         right_node = __make_node(node.rightChild)
         graph.add_node(right_node)
-        graph.add_edge(pydot.Edge(this_node, right_node, label=">= %.1f" % node.threshold, fontsize="10.0"))
+        graph.add_edge(pydot.Edge(this_node, right_node))
         __build_tree_graph(node.rightChild, right_node, graph)
 
 
