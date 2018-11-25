@@ -123,7 +123,7 @@ class Application(tk.Frame):
         self.subframe_tree_canvas.grid_rowconfigure(0, weight=1)
         self.subframe_tree_canvas.grid_columnconfigure(0, weight=1)
 
-        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="white")
+        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="#FCFEFC")
 
         self.scroll_h = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.HORIZONTAL)
         self.scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
@@ -166,7 +166,7 @@ class Application(tk.Frame):
         self.subframe_columns = tk.Frame(self.frame_bottom)
         self.subframe_columns.grid(row=0, column=0, sticky="nsew")
 
-        self.subframe_column_name_inputs_area = tk.LabelFrame(self.subframe_columns, text="Choose Column Names and Predicted Class")
+        self.subframe_column_name_inputs_area = tk.LabelFrame(self.subframe_columns, text="Input Column Names and Select Label/Class Column")
         self.subframe_column_name_inputs_area.pack(padx=10, fill=tk.X)
 
         # Build the subframe which will contain the text input boxes to input column names
@@ -266,7 +266,8 @@ class Application(tk.Frame):
             self.cols_text_boxes.append(text_box)
         for idx in range(num_cols):
             radio = tk.Radiobutton(self.subframe_col_options_inner,
-                                   text="Label", variable=self.cols_radio_var, value=idx)  # TODO: Rework/rename this so it's more obvious as to purpose. Perhaps a tooltip (?)
+                                   text="Label", variable=self.cols_radio_var, value=idx)
+            # TODO: Perhaps add a tooltip (?) here for further explanation
             radio.grid(row=2, column=idx)
             self.cols_radio_buttons.append(radio)
         self.cols_radio_buttons[num_cols - 1].select()  # Select last in list, since many data sets have the final column as the label
