@@ -24,10 +24,8 @@ def score(testing_cases: List[Case]) -> float:
     test_correct = 0
     test_total = 0
     for case in testing_cases:
-        print(case.label + "/" + case.predicted, end=",")  # DEBUG
         test_total += 1
-        if case.label in case.predicted:
+        if case.label in case.predicted: # TODO DEBUG: using "in" rather than "==", which may incorrectly identify labels that are substrings of another
             test_correct += 1
 
-    print("correct=%d / total=%d, %.1f" % (test_correct, test_total, test_correct / test_total))  # DEBUG
     return test_correct / test_total

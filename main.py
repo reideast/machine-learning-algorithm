@@ -140,8 +140,16 @@ class Application(tk.Frame):
         self.subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
         # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        self.label_prediction_score = tk.Label(text="insert-predictions-here", font=("TkDefaultFont", 18))
-        self.label_prediction_score.pack(side=tk.LEFT)
+        self.subframe_classification_accuracy = tk.LabelFrame(self.subframe_results_predictions, text="Classification Accuracy", padx=5, pady=5)
+        self.subframe_classification_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
+        self.label_prediction_score = tk.Label(self.subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 18), justify=tk.LEFT)
+        self.label_prediction_score.pack()
+
+        # DEBUG: accuracy of training set
+        self.subframe_training_accuracy = tk.LabelFrame(self.subframe_results_predictions, text="Training Accuracy", padx=5, pady=5)
+        self.subframe_training_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
+        self.label_training_accuracy = tk.Label(self.subframe_training_accuracy, text="xx.x%", font=("TkDefaultFont", 16), justify=tk.LEFT)
+        self.label_training_accuracy.pack()
 
         self.scrollframe_table_predictions = tk.Frame(self.subframe_results_predictions, bd=2, relief=tk.SUNKEN)
         self.table_predictions = ttk.Treeview(self.scrollframe_table_predictions, height=5, show="headings", columns="message_column")  # Height is number of rows
@@ -387,12 +395,10 @@ class Application(tk.Frame):
             self.model = train(self.training_set)
 
             # Test on the holdout set
-            print("DEBUG: testing set")
             test(self.model, self.testing_set)
             self.test_score = score(self.testing_set)
 
             # DEBUG: Also score the training set, which reveals confidence in the algorithm
-            print("DEBUG: training set")
             test(self.model, self.training_set)
             self.train_score = score(self.training_set)
 
@@ -410,7 +416,8 @@ class Application(tk.Frame):
             self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
 
             # Write score
-            self.label_prediction_score["text"] = "Predictions\n%.1f%%" % (self.test_score * 100)
+            self.label_prediction_score["text"] = "%.1f%%" % (self.test_score * 100)
+            self.label_training_accuracy["text"] = "%.1f%%" % (self.train_score * 100)
 
             # Put results into datatable
 
