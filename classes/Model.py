@@ -22,5 +22,6 @@ class Tree:
         self.threshold = None
         self.leftChild = None
         self.rightChild = None
-        self.debug_id = -1  # DEBUG
+        self.debug_id = -1  # TODO: rename to something like "UUID". It's needed to make nodes unique in Graphviz
         self.numCases = None
+        self.numCasesMajorityClass = -1

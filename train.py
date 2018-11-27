@@ -46,6 +46,7 @@ def buildModelTreeRecursive(data_cases):
                 max = item
                 maxIndex = idx
         tree.predicted = list(countClasses.keys())[maxIndex]
+        tree.numCasesMajorityClass = max
         return tree              
     
     # Internal Node still needs split
