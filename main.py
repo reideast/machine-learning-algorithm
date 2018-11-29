@@ -120,6 +120,7 @@ class Application(tk.Frame):
         self.canvas_area = []
         self.subframe_tree_canvas = []
         self.tree_canvas = []
+        self.canvas_img_data = []
         self.scroll_h = []
         self.scroll_v = []
         self.subframe_results_predictions = []
@@ -297,6 +298,7 @@ class Application(tk.Frame):
 
         tree_canvas = tk.Canvas(subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="#FCFEFC")
         self.tree_canvas.append(tree_canvas)
+        self.canvas_img_data.append(None)
 
         scroll_h = tk.Scrollbar(subframe_tree_canvas, orient=tk.HORIZONTAL)
         scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
@@ -477,8 +479,9 @@ class Application(tk.Frame):
                 self.graph_png_img_data.append(graph_png_img_data)
 
                 # Paint image
-                self.tree_canvas[i].delete("all")  # Remove existing image objects
-                self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
+                if self.canvas_img_data[i] is not None:
+                    self.tree_canvas[i].delete(self.canvas_img_data[i])  # Remove existing image objects
+                self.canvas_img_data[i] = self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
                 # TODO: write in the centre of the canvas, iff smaller than the window)
                 # Reconfigure scrolling area of canvas to the area of the current graph
                 self.tree_canvas[i].config(scrollregion=(0, 0, graph_photoimage_img_data.width(), graph_photoimage_img_data.height()))
