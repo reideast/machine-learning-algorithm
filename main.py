@@ -31,7 +31,6 @@ class Application(tk.Frame):
         self.average_test_score = -1.0
         self.graph_photoimage_img_data = []
         self.graph_png_img_data = []
-        self.is_subframe_columns_visible = False
         self.current_results_subframe_shown = -1
 
         # ##################   Frame Top: Control Buttons   ################## #
@@ -117,23 +116,16 @@ class Application(tk.Frame):
         # ##################   Frame Bottom: Results   ################## #
         # Subframe to show results of the model; Make ten of them into arrays of GUI elements
         self.subframe_results = []
-        self.canvas_area = []
-        self.subframe_tree_canvas = []
         self.tree_canvas = []
         self.canvas_img_data = []
-        self.scroll_h = []
-        self.scroll_v = []
-        self.subframe_results_predictions = []
-        self.subframe_classification_accuracy = []
         self.label_prediction_score = []
         self.label_training_accuracy = []
-        self.subframe_aggregate_classification_accuracy = []
         self.label_aggregate_prediction_score = []
         self.scrollframe_table_predictions = []
         self.table_predictions = []
         self.scrollbar_table_prediction = []
         for idx in range(NUM_MODELS):
-            self.make_single_results_frame()
+            self.subframe_results.append(self.make_single_results_frame())
 
         # ##################   Frame Bottom: Set Input File Options   ################## #
         # Subframe with controls to set the column options
@@ -182,19 +174,16 @@ class Application(tk.Frame):
     # ##################   Methods to support switching pages   ################### #
 
     def show_subframe_columns(self):
-        # self.hide_subframe_tree() # TODO: not needed?
         if self.filename is "":
             self.__change_subframe_column_options_input_state(tk.DISABLED)
         else:
             self.__change_subframe_column_options_input_state(tk.NORMAL)
         self.cols_text_boxes[0].focus_set()  # Set focus on first text box so user can immediately start typing
         self.subframe_columns.tkraise()
-        self.is_subframe_columns_visible = True
         self.current_results_subframe_shown = -1
 
     def disable_subframe_columns(self):
         self.__change_subframe_column_options_input_state(tk.DISABLED)
-        self.is_subframe_columns_visible = False
 
     def __change_subframe_column_options_input_state(self, state):
         for text in self.cols_text_boxes:
@@ -220,10 +209,6 @@ class Application(tk.Frame):
             self.show_subframe_results(0)
         else:
             self.show_subframe_results(self.current_results_subframe_shown + 1)
-
-    # # TODO: not needed?
-    # def hide_subframe_tree(self):
-    #     pass  # todo: need to disable anything for the tree canvas page?
 
     # Add variable number of text/check boxes to input column labels
     def add_col_options(self):
@@ -275,26 +260,18 @@ class Application(tk.Frame):
     def make_single_results_frame(self):
         """
         Generate one of the ten GUI "pages" to hold a graph/table of results
-        Appends one to each of many arrays of GUI elements. (This may be the _least_ pure function I've ever written...)
+        Appends elements that will be edited later to each of many arrays of GUI elements. (This may be the _least_ pure function I've ever written...)
         """
         subframe_results = tk.Frame(self.frame_bottom)
         subframe_results.grid(row=0, column=0, sticky="nsew")
-        self.subframe_results.append(subframe_results)
 
-        # TODO: Indicator of which number result this is
-        # TODO: aggregate (avg) result CA %
-
-        # TODO: remove arrays for the items that do NOT need to be changed later, e.g. random frames
-
-        canvas_area = tk.LabelFrame(subframe_results, text="Model %d of %d" % (len(self.subframe_results), NUM_MODELS), padx=5, pady=5)
+        canvas_area = tk.LabelFrame(subframe_results, text="Model %d of %d" % (len(self.subframe_results) + 1, NUM_MODELS), padx=5, pady=5)
         canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
-        self.canvas_area.append(canvas_area)
 
         subframe_tree_canvas = tk.Frame(canvas_area, bd=2, relief=tk.SUNKEN)
         subframe_tree_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         subframe_tree_canvas.grid_rowconfigure(0, weight=1)
         subframe_tree_canvas.grid_columnconfigure(0, weight=1)
-        self.subframe_tree_canvas.append(subframe_tree_canvas)
 
         tree_canvas = tk.Canvas(subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="#FCFEFC")
         self.tree_canvas.append(tree_canvas)
@@ -303,20 +280,16 @@ class Application(tk.Frame):
         scroll_h = tk.Scrollbar(subframe_tree_canvas, orient=tk.HORIZONTAL)
         scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
         scroll_h.config(command=tree_canvas.xview)
-        self.scroll_h.append(scroll_h)
 
         scroll_v = tk.Scrollbar(subframe_tree_canvas, orient=tk.VERTICAL)
         scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
         scroll_v.config(command=tree_canvas.yview)
-        self.scroll_v.append(scroll_v)
 
         tree_canvas.config(xscrollcommand=scroll_h.set, yscrollcommand=scroll_v.set)
         tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions %d of %d" % (len(self.subframe_results), NUM_MODELS), padx=5, pady=5)
+        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions %d of %d" % (len(self.subframe_results) + 1, NUM_MODELS), padx=5, pady=5)
         subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
-        # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-        self.subframe_results_predictions.append(subframe_results_predictions)
 
         subframe_ca_container = tk.Frame(subframe_results_predictions)
         subframe_ca_container.pack(side=tk.LEFT)
@@ -325,7 +298,6 @@ class Application(tk.Frame):
         subframe_classification_accuracy.pack(padx=5, pady=5, side=tk.TOP, fill=tk.X)
         label_prediction_score = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 18), justify=tk.LEFT)
         label_prediction_score.pack()
-        self.subframe_classification_accuracy.append(subframe_classification_accuracy)
         self.label_prediction_score.append(label_prediction_score)
 
         # DEBUG: accuracy of training set
@@ -337,7 +309,6 @@ class Application(tk.Frame):
         subframe_aggregate_classification_accuracy.pack(padx=5, pady=5, side=tk.BOTTOM, fill=tk.X)
         label_aggregate_prediction_score = tk.Label(subframe_aggregate_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 14), justify=tk.LEFT)
         label_aggregate_prediction_score.pack()
-        self.subframe_aggregate_classification_accuracy.append(subframe_aggregate_classification_accuracy)
         self.label_aggregate_prediction_score.append(label_aggregate_prediction_score)
 
         scrollframe_table_predictions = tk.Frame(subframe_results_predictions, bd=2, relief=tk.SUNKEN)
@@ -352,6 +323,8 @@ class Application(tk.Frame):
         self.scrollframe_table_predictions.append(scrollframe_table_predictions)
         self.table_predictions.append(table_predictions)
         self.scrollbar_table_prediction.append(scrollbar_table_prediction)
+
+        return subframe_results
 
     # DEBUG: Load up owls.csv quickly
     def cheater_shortcut(self):
@@ -482,7 +455,6 @@ class Application(tk.Frame):
                 if self.canvas_img_data[i] is not None:
                     self.tree_canvas[i].delete(self.canvas_img_data[i])  # Remove existing image objects
                 self.canvas_img_data[i] = self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
-                # TODO: write in the centre of the canvas, iff smaller than the window)
                 # Reconfigure scrolling area of canvas to the area of the current graph
                 self.tree_canvas[i].config(scrollregion=(0, 0, graph_photoimage_img_data.width(), graph_photoimage_img_data.height()))
 
