@@ -11,6 +11,7 @@ from tkinter import filedialog, messagebox, IntVar, ttk
 
 import logging
 import os
+from datetime import datetime
 
 
 class Application(tk.Frame):
@@ -94,7 +95,7 @@ class Application(tk.Frame):
         self.button_save = tk.Button(self.frame_controls)
         self.button_save["text"] = "Save Results"
         self.button_save["state"] = tk.DISABLED
-        self.button_save["command"] = lambda: messagebox.showinfo("Save", "Save") # TODO
+        self.button_save["command"] = self.save_results
         self.image_save = tk.PhotoImage(file="images/save.png")
         self.button_save["compound"] = tk.LEFT
         self.button_save["image"] = self.image_save
@@ -425,7 +426,7 @@ class Application(tk.Frame):
             # Train, score, and display each model
             col_indices = list(range(len(Case.attributes_names) + 2))  # Make tuple of column names, as defined by user. Same for each loop
             for i in range(NUM_MODELS):
-                logging.info("Training model #" + str(i))
+                logging.info("Training model #" + str(i + 1))
 
                 # Get a randomised split of the data set, cloned so the master set remains ready for re-use
                 training_set, testing_set = clone_spliter(self.master_data_set)
@@ -503,13 +504,33 @@ class Application(tk.Frame):
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
-    def show_results(self):
-        pass
-
     def save_results(self):
-        # TODO: this is just a stub
-        # Write PNG file out
-        open("graph.png", "wb").write(self.graph_png_img_data[0])
+        if len(self.model) != 0:
+            # Get now as a datetime string to tag files with
+            date_tag = datetime.now().strftime("%y%m%d-%H%M")
+
+            # Make a templating string to build each individual filename later
+            filename_template = "results - %s - %%d of %d.%%s" % (date_tag, NUM_MODELS)
+
+            chosen_folder = filedialog.askdirectory(initialdir=os.getcwd(),
+                                                    title="Choose directory to save results into, files will be named \"" + filename_template % (0, "csv/png") + "\"")
+            if chosen_folder is not "":
+                csv_header_row = ",".join(Case.attributes_names + [Case.label_name, "predicted"]) + "\n"
+                for idx in range(NUM_MODELS):
+                    # Write PNG file out
+                    png_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "png"))
+                    open(png_filename, "wb").write(self.graph_png_img_data[idx])
+
+                    # Write CSV file out
+                    csv_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "csv"))
+                    csv_file = open(csv_filename, "w")
+                    csv_file.write(csv_header_row)
+                    for case in self.testing_set[idx]:
+                        columns = [str(item) for item in case.attributes + [str(case.label), str(case.predicted)]]
+                        csv_file.write(",".join(columns) + "\n")
+                    csv_file.close()
+        else:
+            messagebox.showwarning("No model trained", "Cannot save model results: no model has been trained")
 
 DEBUG = True
 if DEBUG:
