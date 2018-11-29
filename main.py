@@ -28,6 +28,7 @@ class Application(tk.Frame):
         self.model = []
         self.test_score = []
         self.train_score = []
+        self.average_test_score = -1.0
         self.graph_photoimage_img_data = []
         self.graph_png_img_data = []
         self.is_subframe_columns_visible = False
@@ -125,6 +126,8 @@ class Application(tk.Frame):
         self.subframe_classification_accuracy = []
         self.label_prediction_score = []
         self.label_training_accuracy = []
+        self.subframe_aggregate_classification_accuracy = []
+        self.label_aggregate_prediction_score = []
         self.scrollframe_table_predictions = []
         self.table_predictions = []
         self.scrollbar_table_prediction = []
@@ -280,7 +283,9 @@ class Application(tk.Frame):
         # TODO: Indicator of which number result this is
         # TODO: aggregate (avg) result CA %
 
-        canvas_area = tk.LabelFrame(subframe_results, text="Model %d of %d" % (len(self.canvas_area) + 1, NUM_MODELS), padx=5, pady=5)
+        # TODO: remove arrays for the items that do NOT need to be changed later, e.g. random frames
+
+        canvas_area = tk.LabelFrame(subframe_results, text="Model %d of %d" % (len(self.subframe_results), NUM_MODELS), padx=5, pady=5)
         canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
         self.canvas_area.append(canvas_area)
 
@@ -306,13 +311,16 @@ class Application(tk.Frame):
         tree_canvas.config(xscrollcommand=scroll_h.set, yscrollcommand=scroll_v.set)
         tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions %d of %d" % (len(self.subframe_results_predictions) + 1, NUM_MODELS), padx=5, pady=5)
+        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions %d of %d" % (len(self.subframe_results), NUM_MODELS), padx=5, pady=5)
         subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
         # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.subframe_results_predictions.append(subframe_results_predictions)
 
-        subframe_classification_accuracy = tk.LabelFrame(subframe_results_predictions, text="Classification Accuracy", padx=5, pady=5)
-        subframe_classification_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
+        subframe_ca_container = tk.Frame(subframe_results_predictions)
+        subframe_ca_container.pack(side=tk.LEFT)
+
+        subframe_classification_accuracy = tk.LabelFrame(subframe_ca_container, text="Classification Accuracy", padx=5, pady=5)
+        subframe_classification_accuracy.pack(padx=5, pady=5, side=tk.TOP, fill=tk.X)
         label_prediction_score = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 18), justify=tk.LEFT)
         label_prediction_score.pack()
         self.subframe_classification_accuracy.append(subframe_classification_accuracy)
@@ -322,6 +330,13 @@ class Application(tk.Frame):
         label_training_accuracy = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 10), justify=tk.LEFT)
         label_training_accuracy.pack()
         self.label_training_accuracy.append(label_training_accuracy)
+
+        subframe_aggregate_classification_accuracy = tk.LabelFrame(subframe_ca_container, text="Aggregate CA", padx=5, pady=5)
+        subframe_aggregate_classification_accuracy.pack(padx=5, pady=5, side=tk.BOTTOM, fill=tk.X)
+        label_aggregate_prediction_score = tk.Label(subframe_aggregate_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 14), justify=tk.LEFT)
+        label_aggregate_prediction_score.pack()
+        self.subframe_aggregate_classification_accuracy.append(subframe_aggregate_classification_accuracy)
+        self.label_aggregate_prediction_score.append(label_aggregate_prediction_score)
 
         scrollframe_table_predictions = tk.Frame(subframe_results_predictions, bd=2, relief=tk.SUNKEN)
         table_predictions = ttk.Treeview(scrollframe_table_predictions, height=5, show="headings", columns="message_column")  # Height is number of rows
@@ -494,6 +509,14 @@ class Application(tk.Frame):
                 # Reconnect scrollbar events to new Treeview object
                 self.table_predictions[i].config(yscrollcommand=self.scrollbar_table_prediction[i].set)
                 self.scrollbar_table_prediction[i].config(command=self.table_predictions[i].yview)
+
+            # Calculate aggregate classification accuracy
+            total = 0.0
+            for test_score in self.test_score:
+                total += test_score
+            self.average_test_score = total / NUM_MODELS
+            for aggregate_result_label in self.label_aggregate_prediction_score:
+                aggregate_result_label["text"] = "%.1f%%" % (self.average_test_score * 100)
 
             # Enable browsing through results and saving all results
             self.button_previous["state"] = tk.NORMAL
