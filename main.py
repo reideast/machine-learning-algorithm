@@ -44,17 +44,17 @@ class Application(tk.Frame):
         self.button_cheat["command"] = self.cheater_shortcut
         self.image_cheat = tk.PhotoImage(file="images/process.png")
         self.button_cheat["image"] = self.image_cheat
-        self.button_cheat.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        # self.button_cheat.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
         self.button_cheat_prev = tk.Button(self.frame_controls)
-        self.button_cheat_prev["command"] = lambda: self.show_subframe_columns()  # DEBUG
+        self.button_cheat_prev["command"] = lambda: self.show_subframe_columns()
         self.image_cheat_prev = tk.PhotoImage(file="images/previous.png")
         self.button_cheat_prev["image"] = self.image_cheat_prev
-        self.button_cheat_prev.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        # self.button_cheat_prev.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
         self.button_cheat_next = tk.Button(self.frame_controls)
-        self.button_cheat_next["command"] = lambda: self.show_subframe_results(0)  # DEBUG
+        self.button_cheat_next["command"] = lambda: self.show_subframe_results(0)
         self.image_cheat_next = tk.PhotoImage(file="images/next.png")
         self.button_cheat_next["image"] = self.image_cheat_next
-        self.button_cheat_next.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        # self.button_cheat_next.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
 
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
