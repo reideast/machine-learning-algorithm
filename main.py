@@ -23,10 +23,15 @@ class Application(tk.Frame):
         self.is_file_prepared = False
         self.trainer = None
         self.master_data_set = None
-        self.training_set = None
-        self.testing_set = None
-        self.model = None
+        self.training_set = []
+        self.testing_set = []
+        self.model = []
+        self.test_score = []
+        self.train_score = []
+        self.graph_photoimage_img_data = []
+        self.graph_png_img_data = []
         self.is_subframe_columns_visible = False
+        self.current_results_subframe_shown = -1
 
         # ##################   Frame Top: Control Buttons   ################## #
         self.frame_controls = tk.Frame(self)
@@ -71,7 +76,7 @@ class Application(tk.Frame):
         self.button_previous = tk.Button(self.frame_controls)
         self.button_previous["text"] = "Previous"
         self.button_previous["state"] = tk.DISABLED
-        self.button_previous["command"] = lambda: messagebox.showinfo("Previous", "Previous") # TODO
+        self.button_previous["command"] = self.show_previous_subframe_results
         self.image_previous = tk.PhotoImage(file="images/previous.png")
         self.button_previous["compound"] = tk.LEFT
         self.button_previous["image"] = self.image_previous
@@ -80,7 +85,7 @@ class Application(tk.Frame):
         self.button_next = tk.Button(self.frame_controls)
         self.button_next["text"] = "Next"
         self.button_next["state"] = tk.DISABLED
-        self.button_next["command"] = lambda: messagebox.showinfo("Next", "Next") # TODO
+        self.button_next["command"] = self.show_next_subframe_results
         self.image_next = tk.PhotoImage(file="images/next.png")
         self.button_next["compound"] = tk.RIGHT
         self.button_next["image"] = self.image_next
@@ -123,7 +128,7 @@ class Application(tk.Frame):
         self.scrollframe_table_predictions = []
         self.table_predictions = []
         self.scrollbar_table_prediction = []
-        for idx in range(10):
+        for idx in range(NUM_MODELS):
             self.make_single_results_frame()
 
         # ##################   Frame Bottom: Set Input File Options   ################## #
@@ -178,9 +183,10 @@ class Application(tk.Frame):
             self.__change_subframe_column_options_input_state(tk.DISABLED)
         else:
             self.__change_subframe_column_options_input_state(tk.NORMAL)
-        self.cols_text_boxes[0].focus_set()
+        self.cols_text_boxes[0].focus_set()  # Set focus on first text box so user can immediately start typing
         self.subframe_columns.tkraise()
         self.is_subframe_columns_visible = True
+        self.current_results_subframe_shown = -1
 
     def disable_subframe_columns(self):
         self.__change_subframe_column_options_input_state(tk.DISABLED)
@@ -194,10 +200,22 @@ class Application(tk.Frame):
         self.button_process_csv["state"] = state
 
     def show_subframe_results(self, idx):
-        if self.is_subframe_columns_visible:  # Only do the work of disabling input boxes if that frame was already on top
+        if self.current_results_subframe_shown < 0:  # Only do the work of disabling input boxes if that frame was already on top
             self.disable_subframe_columns()
-        self.disable_subframe_columns()
         self.subframe_results[idx].tkraise()
+        self.current_results_subframe_shown = idx
+
+    def show_previous_subframe_results(self):
+        if self.current_results_subframe_shown <= 0:
+            self.show_subframe_results(NUM_MODELS - 1)
+        else:
+            self.show_subframe_results(self.current_results_subframe_shown - 1)
+
+    def show_next_subframe_results(self):
+        if self.current_results_subframe_shown >= NUM_MODELS - 1 or self.current_results_subframe_shown < 0:
+            self.show_subframe_results(0)
+        else:
+            self.show_subframe_results(self.current_results_subframe_shown + 1)
 
     # # TODO: not needed?
     # def hide_subframe_tree(self):
@@ -205,6 +223,11 @@ class Application(tk.Frame):
 
     # Add variable number of text/check boxes to input column labels
     def add_col_options(self):
+        """
+        Generate the text boxes, labels, etc., one for each dataset attribute column
+        So that user can input the names for each column
+        Destroys existing input boxes within the frame and recreates them
+        """
         if self.subframe_col_options_inner is not None:
             self.subframe_col_options_inner.destroy()
         self.subframe_col_options_inner = tk.Frame(self.subframe_col_options)
@@ -254,6 +277,9 @@ class Application(tk.Frame):
         subframe_results.grid(row=0, column=0, sticky="nsew")
         self.subframe_results.append(subframe_results)
 
+        # TODO: Indicator of which number result this is
+        # TODO: aggregate (avg) result CA %
+
         canvas_area = tk.LabelFrame(subframe_results, text="Model", padx=5, pady=5)
         canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
         self.canvas_area.append(canvas_area)
@@ -290,6 +316,7 @@ class Application(tk.Frame):
         label_prediction_score = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 18), justify=tk.LEFT)
         label_prediction_score.pack()
         self.subframe_classification_accuracy.append(subframe_classification_accuracy)
+        self.label_prediction_score.append(label_prediction_score)
 
         # DEBUG: accuracy of training set
         label_training_accuracy = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 10), justify=tk.LEFT)
@@ -339,6 +366,9 @@ class Application(tk.Frame):
 
             Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
+            self.button_previous["state"] = tk.DISABLED
+            self.button_next["state"] = tk.DISABLED
+            self.button_save["state"] = tk.DISABLED
             logging.debug("Preparing to choose attributes for data file: " + self.filename)
 
             # Recreate column attribute picker GUI elements for user to provide column names
@@ -393,64 +423,85 @@ class Application(tk.Frame):
         if self.master_data_set is not None:
             # TODO: Need to implement some kind of GUI spinner while training is ongoing?
 
-            # TODO: loop below 10 times
+            # Clear previous models before re-training
+            self.training_set = []
+            self.testing_set = []
+            self.model = []
+            self.test_score = []
+            self.train_score = []
+            self.graph_photoimage_img_data = []
+            self.graph_png_img_data = []
 
-            # Get a randomised split of the data set, cloned so the master set remains ready for re-use
-            self.training_set, self.testing_set = clone_spliter(self.master_data_set)
+            # Train, score, and display each model
+            col_indices = list(range(len(Case.attributes_names) + 2))  # Make tuple of column names, as defined by user. Same for each loop
+            for i in range(NUM_MODELS):
+                logging.info("Training model #" + str(i))
 
-            # Build that model!
-            self.model = train(self.training_set)
+                # Get a randomised split of the data set, cloned so the master set remains ready for re-use
+                training_set, testing_set = clone_spliter(self.master_data_set)
+                self.training_set.append(training_set)
+                self.testing_set.append(testing_set)
 
-            # Test on the holdout set
-            test(self.model, self.testing_set)
-            self.test_score = score(self.testing_set)
+                # Build that model!
+                model = train(training_set)
+                self.model.append(model)
 
-            # DEBUG: Also score the training set, which reveals confidence in the algorithm
-            test(self.model, self.training_set)
-            self.train_score = score(self.training_set)
+                # Test & score on the holdout set, e.g. make predictions
+                test(model, testing_set)
+                test_score = score(testing_set)
+                self.test_score.append(test_score)
 
-            # TODO: Build up 10 graph/results view
+                # DEBUG: Also score the training set, which reveals confidence in the algorithm
+                test(model, training_set)
+                train_score = score(training_set)
+                self.train_score.append(train_score)
 
-            # TODO: Switch to first results/graph view
+                # Make Graph using pydot python objects and return as a tk PhotoImage & PNG
+                graph_photoimage_img_data, graph_png_img_data = graph_model(model)
+                self.graph_photoimage_img_data.append(graph_photoimage_img_data)
+                self.graph_png_img_data.append(graph_png_img_data)
+
+                # Paint image
+                self.tree_canvas[i].delete("all")  # Remove existing image objects
+                self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
+                # TODO: write in the centre of the canvas, iff smaller than the window)
+                # Reconfigure scrolling area of canvas to the area of the current graph
+                self.tree_canvas[i].config(scrollregion=(0, 0, graph_photoimage_img_data.width(), graph_photoimage_img_data.height()))
+
+                # Write score
+                self.label_prediction_score[i]["text"] = "%.1f%%" % (test_score * 100)
+                self.label_training_accuracy[i]["text"] = "Testing Acc.: %.1f%%" % (train_score * 100)
+
+                # Put results into datatable
+                self.table_predictions[i].destroy()
+                self.table_predictions[i] = ttk.Treeview(self.scrollframe_table_predictions[i], height=5, show="headings", columns=col_indices)
+                self.table_predictions[i].pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+                # Create column headers
+                for j, item in enumerate(Case.attributes_names):
+                    self.table_predictions[i].column(str(j), minwidth=5, width=50)
+                    self.table_predictions[i].heading(str(j), text=item, anchor="w")
+                for j, item in enumerate([Case.label_name, "Predicted"]):
+                    self.table_predictions[i].column(str(j + len(Case.attributes_names)), minwidth=10, width=100)
+                    self.table_predictions[i].heading(str(j + len(Case.attributes_names)), text=item, anchor="w")
+                # Create table contents
+                self.table_predictions[i].tag_configure("even", background="#eeeeee")
+                self.table_predictions[i].tag_configure("mismatchEven", background="#eeeeee", foreground="#cc0000")
+                self.table_predictions[i].tag_configure("mismatchOdd", foreground="#cc0000")
+                for j, case in enumerate(testing_set):
+                    self.table_predictions[i].insert("", "end", values=[item for item in case.attributes + [case.label, case.predicted]],
+                                                  tags="mismatch" + ("Even" if j % 2 == 0 else "Odd") if case.predicted != case.label else ("even" if j % 2 == 0 else "odd")
+                                                  )
+                # Reconnect scrollbar events to new Treeview object
+                self.table_predictions[i].config(yscrollcommand=self.scrollbar_table_prediction[i].set)
+                self.scrollbar_table_prediction[i].config(command=self.table_predictions[i].yview)
+
+            # Enable browsing through results and saving all results
+            self.button_previous["state"] = tk.NORMAL
+            self.button_next["state"] = tk.NORMAL
+            self.button_save["state"] = tk.NORMAL
+
+            # Show the first set of results
             self.show_subframe_results(0)
-
-            # Make Graph using pydot python objects and return as a tk PhotoImage & PNG
-            self.photoimage_img_data, self.png_img_data = graph_model(self.model)
-
-            # Paint image
-            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
-            # Reconfigure scrolling area of canvas to the area of the current graph
-            self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
-
-            # Write score
-            self.label_prediction_score["text"] = "%.1f%%" % (self.test_score * 100)
-            self.label_training_accuracy["text"] = "Testing Acc.: %.1f%%" % (self.train_score * 100)
-
-            # Put results into datatable
-            self.table_predictions.destroy()
-            col_indices = list(range(len(Case.attributes_names) + 2))  # Make tuple of columns
-            self.table_predictions = ttk.Treeview(self.scrollframe_table_predictions, height=5, show="headings", columns=col_indices)
-            self.table_predictions.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-            # Create column headers
-            for idx, item in enumerate(Case.attributes_names):
-                self.table_predictions.column(str(idx), minwidth=5, width=50)
-                self.table_predictions.heading(str(idx), text=item, anchor="w")
-            for idx, item in enumerate([Case.label_name, "Predicted"]):
-                self.table_predictions.column(str(idx + len(Case.attributes_names)), minwidth=10, width=100)
-                self.table_predictions.heading(str(idx + len(Case.attributes_names)), text=item, anchor="w")
-            # Create table contents
-            self.table_predictions.tag_configure("even", background="#eeeeee")
-            self.table_predictions.tag_configure("mismatchEven", background="#eeeeee", foreground="#cc0000")
-            self.table_predictions.tag_configure("mismatchOdd", foreground="#cc0000")
-            for idx, case in enumerate(self.testing_set):
-                self.table_predictions.insert("", "end", values=[item for item in case.attributes + [case.label, case.predicted]],
-                                              tags="mismatch" + ("Even" if idx % 2 == 0 else "Odd") if case.predicted != case.label else ("even" if idx % 2 == 0 else "odd")
-                                              )
-            # Reconnect scrollbar events to new Treeview object
-            self.table_predictions.config(yscrollcommand=self.scrollbar_table_prediction.set)
-            self.scrollbar_table_prediction.config(command=self.table_predictions.yview)
-
-            # TODO:     Also, make Prev/Next buttons work
         else:
             messagebox.showwarning("No file loaded", "Cannot train model: no data file has been loaded")
 
@@ -460,7 +511,7 @@ class Application(tk.Frame):
     def save_results(self):
         # TODO: this is just a stub
         # Write PNG file out
-        open("graph.png", "wb").write(self.png_img_data)
+        open("graph.png", "wb").write(self.graph_png_img_data[0])
 
 DEBUG = True
 if DEBUG:
@@ -468,6 +519,8 @@ if DEBUG:
 
 CANVAS_WIDTH = 600
 CANVAS_HEIGHT = 600
+
+NUM_MODELS = 10
 
 root = tk.Tk()
 root.minsize(1, 700)  # Must be at least this tall
