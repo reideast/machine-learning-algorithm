@@ -27,3 +27,6 @@ Data by BomSymbols from the Noun Project"""
 #     pydot example 1
 #     @author: Federico Cáceres
 #     @url: http://pythonhaven.wordpress.com/2009/12/09/generating_graphs_with_pydot
+
+# TODO:
+# Frame switching code using tkraise() to bring z-order of frame up: Bryan Oakley (26 September 2011) https://stackoverflow.com/a/7557028/5271224

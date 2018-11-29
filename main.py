@@ -39,16 +39,16 @@ class Application(tk.Frame):
         self.image_cheat = tk.PhotoImage(file="images/process.png")
         self.button_cheat["image"] = self.image_cheat
         self.button_cheat.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
-        self.button_cheat_graph = tk.Button(self.frame_controls)
-        self.button_cheat_graph["command"] = self.cheater_shortcut_graph
-        self.image_cheat_graph = tk.PhotoImage(file="images/data.png")
-        self.button_cheat_graph["image"] = self.image_cheat_graph
-        self.button_cheat_graph.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
-        self.button_cheat_both = tk.Button(self.frame_controls)
-        self.button_cheat_both["command"] = self.cheater_shortcut_both
-        self.image_cheat_both = tk.PhotoImage(file="images/next.png")
-        self.button_cheat_both["image"] = self.image_cheat_both
-        self.button_cheat_both.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        self.button_cheat_prev = tk.Button(self.frame_controls)
+        self.button_cheat_prev["command"] = lambda: self.show_subframe_columns()  # DEBUG
+        self.image_cheat_prev = tk.PhotoImage(file="images/previous.png")
+        self.button_cheat_prev["image"] = self.image_cheat_prev
+        self.button_cheat_prev.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+        self.button_cheat_next = tk.Button(self.frame_controls)
+        self.button_cheat_next["command"] = lambda: self.show_subframe_results(0)  # DEBUG
+        self.image_cheat_next = tk.PhotoImage(file="images/next.png")
+        self.button_cheat_next["image"] = self.image_cheat_next
+        self.button_cheat_next.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
 
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
@@ -70,29 +70,25 @@ class Application(tk.Frame):
         self.button_previous = tk.Button(self.frame_controls)
         self.button_previous["text"] = "Previous"
         self.button_previous["state"] = tk.DISABLED
-        self.button_previous["command"] = lambda: messagebox.showinfo("Previous", "Previous")
+        self.button_previous["command"] = lambda: messagebox.showinfo("Previous", "Previous") # TODO
         self.image_previous = tk.PhotoImage(file="images/previous.png")
         self.button_previous["compound"] = tk.LEFT
         self.button_previous["image"] = self.image_previous
         self.button_previous.pack(pack_options_button)
 
         self.button_next = tk.Button(self.frame_controls)
-        # self.button_next["text"] = "Next"
-        # self.button_next["state"] = tk.DISABLED
-        # self.button_next["command"] = lambda: messagebox.showinfo("Next", "Next")
-        self.button_next["text"] = "flip page"  # DEBUG
-        self.button_next["command"] = lambda: self.show_subframe_columns()  # DEBUG
+        self.button_next["text"] = "Next"
+        self.button_next["state"] = tk.DISABLED
+        self.button_next["command"] = lambda: messagebox.showinfo("Next", "Next") # TODO
         self.image_next = tk.PhotoImage(file="images/next.png")
         self.button_next["compound"] = tk.RIGHT
         self.button_next["image"] = self.image_next
         self.button_next.pack(pack_options_button)
 
         self.button_save = tk.Button(self.frame_controls)
-        # self.button_save["text"] = "Save Results"
-        # self.button_save["state"] = tk.DISABLED
-        # self.button_save["command"] = lambda: messagebox.showinfo("Save", "Save")
-        self.button_save["text"] = "flip page 2"  # DEBUG
-        self.button_save["command"] = lambda: self.show_subframe_results()  # DEBUG
+        self.button_save["text"] = "Save Results"
+        self.button_save["state"] = tk.DISABLED
+        self.button_save["command"] = lambda: messagebox.showinfo("Save", "Save") # TODO
         self.image_save = tk.PhotoImage(file="images/save.png")
         self.button_save["compound"] = tk.LEFT
         self.button_save["image"] = self.image_save
@@ -289,30 +285,6 @@ class Application(tk.Frame):
 
         self.train_on_data()
 
-    # DEBUG: show graph based on trained data
-    def cheater_shortcut_graph(self):
-        if self.model is None:
-            logging.error("No model yet!")
-        else:
-            # DEBUG: Show a graph
-
-            # Made Graph using pydot python objects and return as a tk PhotoImage
-            self.photoimage_img_data, self.png_img_data = graph_model(self.model)
-
-            # Show graph pane and paint image
-            self.show_subframe_results()
-            self.tree_canvas.create_image(0, 0, image=self.photoimage_img_data, anchor=tk.NW)
-
-            # Reconfigure scrolling area of canvas to the area of the current graph
-            self.tree_canvas.config(scrollregion=(0, 0, self.photoimage_img_data.width(), self.photoimage_img_data.height()))
-
-            # Write PNG file out
-            open("graph.png", "wb").write(self.png_img_data)
-
-    def cheater_shortcut_both(self):
-        self.cheater_shortcut()
-        self.cheater_shortcut_graph()
-
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
         chosen_file = filedialog.askopenfilename(initialdir=os.getcwd(),
@@ -455,8 +427,6 @@ class Application(tk.Frame):
         # TODO: this is just a stub
         # Write PNG file out
         open("graph.png", "wb").write(self.png_img_data)
-
-
 
 DEBUG = True
 if DEBUG:
