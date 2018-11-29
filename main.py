@@ -277,16 +277,16 @@ class Application(tk.Frame):
         self.tree_canvas.append(tree_canvas)
         self.canvas_img_data.append(None)
 
-        scroll_h = tk.Scrollbar(subframe_tree_canvas, orient=tk.HORIZONTAL)
-        scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
-        scroll_h.config(command=tree_canvas.xview)
-
         scroll_v = tk.Scrollbar(subframe_tree_canvas, orient=tk.VERTICAL)
-        scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
+        scroll_v.grid(row=0, column=1, sticky="ns")
         scroll_v.config(command=tree_canvas.yview)
 
+        scroll_h = tk.Scrollbar(subframe_tree_canvas, orient=tk.HORIZONTAL)
+        scroll_h.grid(row=1, column=0, sticky="ew")
+        scroll_h.config(command=tree_canvas.xview)
+
         tree_canvas.config(xscrollcommand=scroll_h.set, yscrollcommand=scroll_v.set)
-        tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        tree_canvas.grid(row=0, column=0, sticky="nsew")
 
         subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions %d of %d" % (len(self.subframe_results) + 1, NUM_MODELS), padx=5, pady=5)
         subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
