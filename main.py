@@ -481,7 +481,13 @@ class Application(tk.Frame):
                 # Paint image
                 if self.canvas_img_data[i] is not None:
                     self.tree_canvas[i].delete(self.canvas_img_data[i])  # Remove existing image objects
-                self.canvas_img_data[i] = self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
+                # Determine if image should be centered or put in top left
+                print(self.tree_canvas[i].winfo_width())
+                if graph_photoimage_img_data.width() > self.tree_canvas[i].winfo_width():
+                    left = 0
+                else:
+                    left = self.tree_canvas[i].winfo_width() / 2 - graph_photoimage_img_data.width() / 2
+                self.canvas_img_data[i] = self.tree_canvas[i].create_image(left, 0, image=graph_photoimage_img_data, anchor=tk.NW)
                 # TODO: write in the centre of the canvas, iff smaller than the window)
                 # Reconfigure scrolling area of canvas to the area of the current graph
                 self.tree_canvas[i].config(scrollregion=(0, 0, graph_photoimage_img_data.width(), graph_photoimage_img_data.height()))
