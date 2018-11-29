@@ -280,7 +280,7 @@ class Application(tk.Frame):
         # TODO: Indicator of which number result this is
         # TODO: aggregate (avg) result CA %
 
-        canvas_area = tk.LabelFrame(subframe_results, text="Model", padx=5, pady=5)
+        canvas_area = tk.LabelFrame(subframe_results, text="Model %d of %d" % (len(self.canvas_area) + 1, NUM_MODELS), padx=5, pady=5)
         canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
         self.canvas_area.append(canvas_area)
 
@@ -306,7 +306,7 @@ class Application(tk.Frame):
         tree_canvas.config(xscrollcommand=scroll_h.set, yscrollcommand=scroll_v.set)
         tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions", padx=5, pady=5)
+        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions %d of %d" % (len(self.subframe_results_predictions) + 1, NUM_MODELS), padx=5, pady=5)
         subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
         # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
         self.subframe_results_predictions.append(subframe_results_predictions)
@@ -470,7 +470,7 @@ class Application(tk.Frame):
 
                 # Write score
                 self.label_prediction_score[i]["text"] = "%.1f%%" % (test_score * 100)
-                self.label_training_accuracy[i]["text"] = "Testing Acc.: %.1f%%" % (train_score * 100)
+                self.label_training_accuracy[i]["text"] = "Testing Acc: %.1f%%" % (train_score * 100)
 
                 # Put results into datatable
                 self.table_predictions[i].destroy()
