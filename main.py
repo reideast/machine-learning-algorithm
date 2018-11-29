@@ -26,6 +26,7 @@ class Application(tk.Frame):
         self.training_set = None
         self.testing_set = None
         self.model = None
+        self.is_subframe_columns_visible = False
 
         # ##################   Frame Top: Control Buttons   ################## #
         self.frame_controls = tk.Frame(self)
@@ -100,62 +101,30 @@ class Application(tk.Frame):
         self.button_about["image"] = self.image_about
         self.button_about.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
 
-        # ##################   Frame Bottom: Results   ################## #
+        # ##################   Frame Bottom: Container   ################## #
         # Frame switching code using tkraise() to bring z-order of frame up: Bryan Oakley (26 September 2011) https://stackoverflow.com/a/7557028/5271224
         self.frame_bottom = tk.Frame(self)
         self.frame_bottom.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.frame_bottom.grid_rowconfigure(0, weight=1)
         self.frame_bottom.grid_columnconfigure(0, weight=1)
 
-        # Subframe to show results of the model
-        self.subframe_results = tk.Frame(self.frame_bottom)
-        self.subframe_results.grid(row=0, column=0, sticky="nsew")
-
-        self.canvas_area = tk.LabelFrame(self.subframe_results, text="Model", padx=5, pady=5)
-        self.canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
-
-        self.subframe_tree_canvas = tk.Frame(self.canvas_area, bd=2, relief=tk.SUNKEN)
-        self.subframe_tree_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-        self.subframe_tree_canvas.grid_rowconfigure(0, weight=1)
-        self.subframe_tree_canvas.grid_columnconfigure(0, weight=1)
-
-        self.tree_canvas = tk.Canvas(self.subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="#FCFEFC")
-
-        self.scroll_h = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.HORIZONTAL)
-        self.scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
-        self.scroll_h.config(command=self.tree_canvas.xview)
-
-        self.scroll_v = tk.Scrollbar(self.subframe_tree_canvas, orient=tk.VERTICAL)
-        self.scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
-        self.scroll_v.config(command=self.tree_canvas.yview)
-
-        self.tree_canvas.config(xscrollcommand=self.scroll_h.set, yscrollcommand=self.scroll_v.set)
-        self.tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
-
-        self.subframe_results_predictions = tk.LabelFrame(self.subframe_results, text="Predictions", padx=5, pady=5)
-        self.subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
-        # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-
-        self.subframe_classification_accuracy = tk.LabelFrame(self.subframe_results_predictions, text="Classification Accuracy", padx=5, pady=5)
-        self.subframe_classification_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
-        self.label_prediction_score = tk.Label(self.subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 18), justify=tk.LEFT)
-        self.label_prediction_score.pack()
-
-        # DEBUG: accuracy of training set
-        # self.subframe_training_accuracy = tk.LabelFrame(self.subframe_results_predictions, text="Training Accuracy", padx=5, pady=5)
-        # self.subframe_training_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
-        self.label_training_accuracy = tk.Label(self.subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 10), justify=tk.LEFT)
-        self.label_training_accuracy.pack()
-
-        self.scrollframe_table_predictions = tk.Frame(self.subframe_results_predictions, bd=2, relief=tk.SUNKEN)
-        self.table_predictions = ttk.Treeview(self.scrollframe_table_predictions, height=5, show="headings", columns="message_column")  # Height is number of rows
-        self.table_predictions.heading("message_column", text="Predictions not loaded yet")
-        self.table_predictions.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.scrollbar_table_prediction = tk.Scrollbar(self.scrollframe_table_predictions)
-        self.scrollbar_table_prediction.pack(side=tk.RIGHT, fill=tk.Y)
-        self.scrollframe_table_predictions.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-        self.table_predictions.config(yscrollcommand=self.scrollbar_table_prediction.set)
-        self.scrollbar_table_prediction.config(command=self.table_predictions.yview)
+        # ##################   Frame Bottom: Results   ################## #
+        # Subframe to show results of the model; Make ten of them into arrays of GUI elements
+        self.subframe_results = []
+        self.canvas_area = []
+        self.subframe_tree_canvas = []
+        self.tree_canvas = []
+        self.scroll_h = []
+        self.scroll_v = []
+        self.subframe_results_predictions = []
+        self.subframe_classification_accuracy = []
+        self.label_prediction_score = []
+        self.label_training_accuracy = []
+        self.scrollframe_table_predictions = []
+        self.table_predictions = []
+        self.scrollbar_table_prediction = []
+        for idx in range(10):
+            self.make_single_results_frame()
 
         # ##################   Frame Bottom: Set Input File Options   ################## #
         # Subframe with controls to set the column options
@@ -204,34 +173,35 @@ class Application(tk.Frame):
     # ##################   Methods to support switching pages   ################### #
 
     def show_subframe_columns(self):
-        self.hide_subframe_tree()
+        # self.hide_subframe_tree() # TODO: not needed?
         if self.filename is "":
-            self.disable_subframe_columns()
+            self.__change_subframe_column_options_input_state(tk.DISABLED)
         else:
-            self.enable_subframe_column_options()
+            self.__change_subframe_column_options_input_state(tk.NORMAL)
         self.cols_text_boxes[0].focus_set()
         self.subframe_columns.tkraise()
+        self.is_subframe_columns_visible = True
 
     def disable_subframe_columns(self):
-        for text in self.cols_text_boxes:
-            text["state"] = tk.DISABLED
-        for radio in self.cols_radio_buttons:
-            radio["state"] = tk.DISABLED
-        self.button_process_csv["state"] = tk.DISABLED
+        self.__change_subframe_column_options_input_state(tk.DISABLED)
+        self.is_subframe_columns_visible = False
 
-    def enable_subframe_column_options(self):
+    def __change_subframe_column_options_input_state(self, state):
         for text in self.cols_text_boxes:
-            text["state"] = tk.NORMAL
+            text["state"] = state
         for radio in self.cols_radio_buttons:
-            radio["state"] = tk.NORMAL
-        self.button_process_csv["state"] = tk.NORMAL
+            radio["state"] = state
+        self.button_process_csv["state"] = state
 
-    def show_subframe_results(self):
+    def show_subframe_results(self, idx):
+        if self.is_subframe_columns_visible:  # Only do the work of disabling input boxes if that frame was already on top
+            self.disable_subframe_columns()
         self.disable_subframe_columns()
-        self.subframe_results.tkraise()
+        self.subframe_results[idx].tkraise()
 
-    def hide_subframe_tree(self):
-        pass  # todo: need to disable anything for the tree canvas page?
+    # # TODO: not needed?
+    # def hide_subframe_tree(self):
+    #     pass  # todo: need to disable anything for the tree canvas page?
 
     # Add variable number of text/check boxes to input column labels
     def add_col_options(self):
@@ -274,6 +244,70 @@ class Application(tk.Frame):
         if DEBUG and "owls.csv" in self.filename:  # also guards against filename not being set yet
             for idx, name in enumerate(["body-length", "wing-length", "body-width", "wing-width", "type"]):
                 self.cols_text_boxes[idx].insert(0, name)
+
+    def make_single_results_frame(self):
+        """
+        Generate one of the ten GUI "pages" to hold a graph/table of results
+        Appends one to each of many arrays of GUI elements. (This may be the _least_ pure function I've ever written...)
+        """
+        subframe_results = tk.Frame(self.frame_bottom)
+        subframe_results.grid(row=0, column=0, sticky="nsew")
+        self.subframe_results.append(subframe_results)
+
+        canvas_area = tk.LabelFrame(subframe_results, text="Model", padx=5, pady=5)
+        canvas_area.pack(padx=10, fill=tk.BOTH, expand=True)
+        self.canvas_area.append(canvas_area)
+
+        subframe_tree_canvas = tk.Frame(canvas_area, bd=2, relief=tk.SUNKEN)
+        subframe_tree_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        subframe_tree_canvas.grid_rowconfigure(0, weight=1)
+        subframe_tree_canvas.grid_columnconfigure(0, weight=1)
+        self.subframe_tree_canvas.append(subframe_tree_canvas)
+
+        tree_canvas = tk.Canvas(subframe_tree_canvas, bd=0, scrollregion=(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT), background="#FCFEFC")
+        self.tree_canvas.append(tree_canvas)
+
+        scroll_h = tk.Scrollbar(subframe_tree_canvas, orient=tk.HORIZONTAL)
+        scroll_h.pack(side=tk.BOTTOM, fill=tk.X)
+        scroll_h.config(command=tree_canvas.xview)
+        self.scroll_h.append(scroll_h)
+
+        scroll_v = tk.Scrollbar(subframe_tree_canvas, orient=tk.VERTICAL)
+        scroll_v.pack(side=tk.RIGHT, fill=tk.Y)
+        scroll_v.config(command=tree_canvas.yview)
+        self.scroll_v.append(scroll_v)
+
+        tree_canvas.config(xscrollcommand=scroll_h.set, yscrollcommand=scroll_v.set)
+        tree_canvas.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+        subframe_results_predictions = tk.LabelFrame(subframe_results, text="Predictions", padx=5, pady=5)
+        subframe_results_predictions.pack(padx=10, pady=10, side=tk.TOP, fill=tk.X)
+        # DEBUG: Might this need expand=True, like the file table has -> self.subframe_inputted_file_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.subframe_results_predictions.append(subframe_results_predictions)
+
+        subframe_classification_accuracy = tk.LabelFrame(subframe_results_predictions, text="Classification Accuracy", padx=5, pady=5)
+        subframe_classification_accuracy.pack(padx=5, pady=5, side=tk.LEFT, fill=tk.X)
+        label_prediction_score = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 18), justify=tk.LEFT)
+        label_prediction_score.pack()
+        self.subframe_classification_accuracy.append(subframe_classification_accuracy)
+
+        # DEBUG: accuracy of training set
+        label_training_accuracy = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 10), justify=tk.LEFT)
+        label_training_accuracy.pack()
+        self.label_training_accuracy.append(label_training_accuracy)
+
+        scrollframe_table_predictions = tk.Frame(subframe_results_predictions, bd=2, relief=tk.SUNKEN)
+        table_predictions = ttk.Treeview(scrollframe_table_predictions, height=5, show="headings", columns="message_column")  # Height is number of rows
+        table_predictions.heading("message_column", text="Predictions not loaded yet")
+        table_predictions.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar_table_prediction = tk.Scrollbar(scrollframe_table_predictions)
+        scrollbar_table_prediction.pack(side=tk.RIGHT, fill=tk.Y)
+        scrollframe_table_predictions.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        table_predictions.config(yscrollcommand=scrollbar_table_prediction.set)
+        scrollbar_table_prediction.config(command=table_predictions.yview)
+        self.scrollframe_table_predictions.append(scrollframe_table_predictions)
+        self.table_predictions.append(table_predictions)
+        self.scrollbar_table_prediction.append(scrollbar_table_prediction)
 
     # DEBUG: Load up owls.csv quickly
     def cheater_shortcut(self):
@@ -378,7 +412,7 @@ class Application(tk.Frame):
             # TODO: Build up 10 graph/results view
 
             # TODO: Switch to first results/graph view
-            self.show_subframe_results()
+            self.show_subframe_results(0)
 
             # Make Graph using pydot python objects and return as a tk PhotoImage & PNG
             self.photoimage_img_data, self.png_img_data = graph_model(self.model)
