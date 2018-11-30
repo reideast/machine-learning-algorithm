@@ -1,17 +1,17 @@
-from parse_csv import parse_csv, read_one
-from classes.Case import Case
-from about import get_about_message
-from split import clone_spliter
-from train import train
-from test import test, score
-from graph_tree import graph_model
-
 import tkinter as tk
 from tkinter import filedialog, messagebox, IntVar, ttk
 
-import logging
-import os
 from datetime import datetime
+import os
+import logging
+
+from about import get_about_message
+from classes.Case import Case, ParseCsvError
+from graph_tree import graph_model
+from parse_csv import parse_csv, read_one
+from split import clone_spliter
+from test import test, score
+from train import train
 
 
 class Application(tk.Frame):
@@ -366,8 +366,10 @@ class Application(tk.Frame):
             self.add_col_options()
             self.show_subframe_columns()
 
-    # Gather properties of CSV file from user-inputted GUI elements
     def save_file_attributes(self):
+        """
+        Gather properties of CSV file from user-inputted GUI elements
+        """
         logging.debug("Loading data file: " + self.filename)
 
         if self.filename is not "":
@@ -383,7 +385,10 @@ class Application(tk.Frame):
                     Case.attributes_names.append(value)
 
             # Parse file into list of python objects
-            self.master_data_set = parse_csv(self.filename)
+            try:
+                self.master_data_set = parse_csv(self.filename)
+            except ParseCsvError as error:
+                tk.messagebox.showerror("Parse CSV Error", "Error while reading file %s\n\nBad line: %s\n\n Item could note be parsed to a float: %s" % (self.filename, error.bad_line, error.bad_item))
 
             # Show datatable of loaded data
             self.table_loaded_input.destroy()

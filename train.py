@@ -14,8 +14,8 @@ def buildModelTreeRecursive(data_cases):
     tree = Tree()
     tree.numCases = len(data_cases)
 
-    Tree.next_debug_id += 1
-    tree.debug_id = Tree.next_debug_id
+    Tree.next_unique_id += 1
+    tree.unique_id = Tree.next_unique_id
 
     # Terminating case 1
     if len(data_cases) == 0: 
