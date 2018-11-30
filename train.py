@@ -110,6 +110,14 @@ def getBestInfoGain(data_cases, attrib):
                 gain = getInfoGain(data_cases, attrib, midValue)
                 pInfoGain.append(gain)
                 pThresholds.append(midValue)
+
+        if len(pInfoGain) == 0:
+            # When ALL the data_cases have an identical value for attrib, the above guard against duplicates means that there will be NO thresholds returned
+            # To prevent breaking the algorithm, make sure to return at least one data point, threshold chosen as the first data case's attrib
+            midValue = allAttributeValues[0]
+            gain = getInfoGain(data_cases, attrib, midValue)
+            pInfoGain.append(gain)
+            pThresholds.append(midValue)
             
         max = -1.0
         best = -1
