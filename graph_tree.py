@@ -39,23 +39,23 @@ def graph_model(model):
     return PhotoImage(data=base64.standard_b64encode(binary_img_data)), graph.create_png(prog="dot")
 
 
-def __build_tree_graph(node, this_node, graph):
+def __build_tree_graph(node, parent_node, graph):
     """
     Recursively build up the Pydot graph object: Each call will make its children nodes, and link them to the node its parent generated
     Terminates if this is a leaf node, which will already have been built by its parent
     :param node: root of the subtree to build from
-    :param this_node: node for this subtree root
+    :param parent_node: node for this subtree's parent
     :param graph: graph object, passed by reference, into which node/edge data will be built
     """
     if not node.isLeaf:
         left_node = __make_node(node.leftChild)
         graph.add_node(left_node)
-        graph.add_edge(pydot.Edge(this_node, left_node, label="< %.1f" % node.threshold, fontsize="10.0"))
+        graph.add_edge(pydot.Edge(parent_node, left_node, label="< %.1f" % node.threshold, fontsize="10.0"))
         __build_tree_graph(node.leftChild, left_node, graph)
 
         right_node = __make_node(node.rightChild)
         graph.add_node(right_node)
-        graph.add_edge(pydot.Edge(this_node, right_node))
+        graph.add_edge(pydot.Edge(parent_node, right_node))
         __build_tree_graph(node.rightChild, right_node, graph)
 
 
@@ -79,5 +79,5 @@ def __make_node(node):
     return pydot.Node(str(node.unique_id),
                       label=node_label,
                       style="rounded, filled" if node.isLeaf else "filled",
-                      shape="box" if node.isLeaf else "box",
+                      shape="box",  # shape="box" if node.isLeaf else "box",
                       fillcolor="#e2fff1" if node.isLeaf else "#e2f1ff")
