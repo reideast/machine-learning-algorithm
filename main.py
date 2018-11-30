@@ -209,6 +209,14 @@ class Application(tk.Frame):
             self.disable_subframe_columns()
         self.subframe_results[idx].tkraise()
         self.current_results_subframe_shown = idx
+        if self.current_results_subframe_shown == 0:
+            self.button_previous["state"] = tk.DISABLED
+        else:
+            self.button_previous["state"] = tk.NORMAL
+        if self.current_results_subframe_shown == NUM_MODELS - 1:  # Note this is not an elif because NUM_MODELS could be just 1
+            self.button_next["state"] = tk.DISABLED
+        else:
+            self.button_next["state"] = tk.NORMAL
 
     def show_previous_subframe_results(self):
         if self.current_results_subframe_shown <= 0:
