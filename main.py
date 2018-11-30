@@ -395,12 +395,6 @@ class Application(tk.Frame):
                 else:
                     Case.attributes_names.append(value)
 
-            # Parse file into list of python objects
-            try:
-                self.master_data_set = parse_csv(self.filename)
-            except ParseCsvError as error:
-                tk.messagebox.showerror("Parse CSV Error", "Error while reading file %s\n\nBad line: %s\n\n Item could note be parsed to a float: %s" % (self.filename, error.bad_line, error.bad_item))
-
             # Show datatable of loaded data
             self.table_loaded_input.destroy()
             col_indices = list(range(len(Case.attributes_names) + 1))  # Make tuple of columns
@@ -411,14 +405,27 @@ class Application(tk.Frame):
                 self.table_loaded_input.column(str(idx), minwidth=5, width=50)
                 self.table_loaded_input.heading(str(idx), text=item, anchor="w")
 
+            # Reconnect scrollbar events to new Treeview object
+            self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
+            self.table_scrollbar.config(command=self.table_loaded_input.yview)
+
+            # Parse file into list of python objects
+            try:
+                self.master_data_set = parse_csv(self.filename)
+            except ParseCsvError as error:
+                tk.messagebox.showerror("Parse CSV Error", "Error while reading file %s\n\nBad line: %s\n\nItem could note be parsed to a float: %s"
+                                        % (self.filename, error.bad_line, error.bad_item))
+                # Reset the GUI with no dataset loaded!
+                # This is done so the user does not see data there still, and ignore the error to continue training expecting that the file actually loaded
+                self.master_data_set = None
+                self.button_train["state"] = tk.DISABLED
+                self.is_file_prepared = False
+                return  # Do not continue with this method
+
             # Fill table with data from file
             self.table_loaded_input.tag_configure("even", background="#eeeeee")
             for idx, case in enumerate(self.master_data_set):
                 self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="even" if idx % 2 == 0 else "")
-
-            # Reconnect scrollbar events to new Treeview object
-            self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
-            self.table_scrollbar.config(command=self.table_loaded_input.yview)
 
             # Enable next step in UI flow
             self.button_train["state"] = tk.NORMAL
