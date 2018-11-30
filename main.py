@@ -534,16 +534,17 @@ class Application(tk.Frame):
                 for idx in range(NUM_MODELS):
                     # Write PNG file out
                     png_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "png"))
-                    open(png_filename, "wb").write(self.graph_png_img_data[idx])
+                    with open(png_filename, "wb") as png_file:
+                        png_file.write(self.graph_png_img_data[idx])
 
                     # Write CSV file out
                     csv_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "csv"))
-                    csv_file = open(csv_filename, "w")
-                    csv_file.write(csv_header_row)
-                    for case in self.testing_set[idx]:
-                        columns = [str(item) for item in case.attributes + [str(case.label), str(case.predicted)]]
-                        csv_file.write(",".join(columns) + "\n")
-                    csv_file.close()
+                    with open(csv_filename, "w") as csv_file:
+                        csv_file.write(csv_header_row)
+                        for case in self.testing_set[idx]:
+                            columns = [str(item) for item in case.attributes + [str(case.label), str(case.predicted)]]
+                            csv_file.write(",".join(columns) + "\n")
+                logging.debug("Files with results and images of models have been saved")
         else:
             messagebox.showwarning("No model trained", "Cannot save model results: no model has been trained")
 

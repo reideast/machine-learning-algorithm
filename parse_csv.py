@@ -20,13 +20,10 @@ def parse_csv(filename):
     """
     cases = []
 
-    file = open(filename)
-
-    # Read the rest of the lines
-    for line in file:
-        cases.append(Case(line))
-
-    file.close()
+    with open(filename) as file:
+        # Read the rest of the lines
+        for line in file:
+            cases.append(Case(line))
 
     return cases
 
@@ -37,7 +34,6 @@ def read_one(filename):
     :param filename: str, path to the CSV file to read
     :return: A list of strings representing each of the values in the first line
     """
-    file = open(filename)
-    line = file.readline()
-    file.close()
+    with open(filename) as file:
+        line = file.readline()
     return line[0:len(line) - 1].split(",")
