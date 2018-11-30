@@ -1,11 +1,22 @@
+# Machine Learning Project
+# By James Quaife: j.quiafe1@nuigalway.ie, SID: 14100104
+# and Andrew East: a.east1@nuigalway.ie, SID: 16280042
+# National University of Ireland, Galway
+# Computer Science CT475: Machine Learning
+# November 2018
+# Supervisor: Dr. Michael Madden
+
+# Teamwork Attribution: This file was written by Andrew East
+
 import base64
 from tkinter import PhotoImage
 
 import pydot
-from classes.Case import Case
-from classes.Model import Tree, Model
 
-def graph_model(model: Model) -> (PhotoImage, bytes):
+from classes.Case import Case
+
+
+def graph_model(model):
     """
     Construct a Graphviz tree from the decision tree model
     :param model: a classes.Model, which contains a decision tree we wish to graph
@@ -28,7 +39,7 @@ def graph_model(model: Model) -> (PhotoImage, bytes):
     return PhotoImage(data=base64.standard_b64encode(binary_img_data)), graph.create_png(prog="dot")
 
 
-def __build_tree_graph(node: Tree, this_node: pydot.Node, graph: pydot.Graph):
+def __build_tree_graph(node, this_node, graph):
     """
     Recursively build up the Pydot graph object: Each call will make its children nodes, and link them to the node its parent generated
     Terminates if this is a leaf node, which will already have been built by its parent
@@ -48,7 +59,7 @@ def __build_tree_graph(node: Tree, this_node: pydot.Node, graph: pydot.Graph):
         __build_tree_graph(node.rightChild, right_node, graph)
 
 
-def __make_node(node: Tree) -> pydot.Node:
+def __make_node(node):
     """
     Build a pydot node that describes a tree node, appropriate to either leaf or internal
     :param node: the Tree node to describe
@@ -57,20 +68,16 @@ def __make_node(node: Tree) -> pydot.Node:
 
     # Build label
     if node.isLeaf:
-        # node_label = "%d. %s\nn=%d" % (node.debug_id, node.predicted, node.numCases)
         if node.numCasesMajorityClass == -1:
-            # node_label = "%s\n(n=%d)" % (node.predicted, node.numCases)
             node_label = node.predicted
         else:
             node_label = "%s\n%.1f%% (%d/%d)" % (node.predicted, (100 * node.numCasesMajorityClass / node.numCases), node.numCasesMajorityClass, node.numCases)
     else:
-        # node_label = "%d. %s < %.1f\nn=%d" % (node.debug_id, Case.attributes_names[node.splitAttribute], node.threshold, node.numCases)
-        # node_label = "%s\nn=%d" % (Case.attributes_names[node.splitAttribute], node.numCases)
         node_label = Case.attributes_names[node.splitAttribute]
 
     # Build node
-    return pydot.Node(str(node.debug_id),
+    return pydot.Node(str(node.unique_id),
                       label=node_label,
                       style="rounded, filled" if node.isLeaf else "filled",
-                      shape="box" if node.isLeaf else "box",  # DEBUG: shapes https://www.graphviz.org/doc/info/shapes.html#polygon
+                      shape="box" if node.isLeaf else "box",
                       fillcolor="#e2fff1" if node.isLeaf else "#e2f1ff")

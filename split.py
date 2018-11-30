@@ -1,3 +1,13 @@
+# Machine Learning Project
+# By James Quaife: j.quiafe1@nuigalway.ie, SID: 14100104
+# and Andrew East: a.east1@nuigalway.ie, SID: 16280042
+# National University of Ireland, Galway
+# Computer Science CT475: Machine Learning
+# November 2018
+# Supervisor: Dr. Michael Madden
+
+# Teamwork Attribution: This file was written by Andrew East
+
 import copy
 from random import shuffle
 
@@ -5,9 +15,13 @@ TESTING_RATIO = 3
 
 
 def clone_spliter(master_data_set):
-    # Clone data set so it can be re-used for other splits later
+    """
+    Takes a list, clones it so it can be re-used later, and splits it into sets of size (n - 1)/n and 1/n where n = TESTING_RATIO
+    :param master_data_set: A list, which will be deep copied to clone it.
+                            If python's standard deepcopy does not go deep enough in the list's objects, then override __deepcopy__(self) in the object class
+    :return: A tuple of two lists, the first of which is the larger one
+    """
     data_set = copy.deepcopy(master_data_set)
-    # overriding deepcopy mechanism for classes: __deepcopy__(self): https://docs.python.org/2/library/copy.html
 
     qty_testing = len(data_set) // TESTING_RATIO
 

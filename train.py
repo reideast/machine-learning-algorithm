@@ -1,3 +1,13 @@
+# Machine Learning Project
+# By James Quaife: j.quiafe1@nuigalway.ie, SID: 14100104
+# and Andrew East: a.east1@nuigalway.ie, SID: 16280042
+# National University of Ireland, Galway
+# Computer Science CT475: Machine Learning
+# November 2018
+# Supervisor: Dr. Michael Madden
+
+# Teamwork Attribution: This file was written by James Quiafe, with some planning and pair programming with Andrew East
+
 from classes.Case import Case
 from classes.Model import Model, Tree
 from math import log
@@ -14,8 +24,8 @@ def buildModelTreeRecursive(data_cases):
     tree = Tree()
     tree.numCases = len(data_cases)
 
-    Tree.next_debug_id += 1
-    tree.debug_id = Tree.next_debug_id
+    Tree.next_unique_id += 1
+    tree.unique_id = Tree.next_unique_id
 
     # Terminating case 1
     if len(data_cases) == 0: 
@@ -100,6 +110,14 @@ def getBestInfoGain(data_cases, attrib):
                 gain = getInfoGain(data_cases, attrib, midValue)
                 pInfoGain.append(gain)
                 pThresholds.append(midValue)
+
+        if len(pInfoGain) == 0:
+            # When ALL the data_cases have an identical value for attrib, the above guard against duplicates means that there will be NO thresholds returned
+            # To prevent breaking the algorithm, make sure to return at least one data point, threshold chosen as the first data case's attrib
+            midValue = allAttributeValues[0]
+            gain = getInfoGain(data_cases, attrib, midValue)
+            pInfoGain.append(gain)
+            pThresholds.append(midValue)
             
         max = -1.0
         best = -1
