@@ -1,3 +1,13 @@
+# Machine Learning Project
+# By James Quaife: j.quiafe1@nuigalway.ie, SID: 14100104
+# and Andrew East: a.east1@nuigalway.ie, SID: 16280042
+# National University of Ireland, Galway
+# Computer Science CT475: Machine Learning
+# November 2018
+# Supervisor: Dr. Michael Madden
+
+# Teamwork Attribution: This file was written by Andrew East
+
 import copy
 from random import shuffle
 
