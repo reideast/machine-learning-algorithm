@@ -15,16 +15,19 @@ Run `python main.py` to open GUI.
    * You may change the filter to choose another file type, but if the file is not formatted with
       commas, the program will not be able to recognise columns
 
-1. Fill in column titles for your data, and select the column that holds your category labels
+1. [Optional] Customise column titles for your data, and select the column that holds your category labels,
+   and then click Update Metadata
 
-1. Click Load CSV File to process the entire file
+   * If the program mis-identifies the label column it will show a warning. Simply choose the radio button
+     that corresponds to the correct label column.
 
 1. Click Train on Data Set to generate the model
 
    * The data will be randomly subdivided in ten different ways, generating ten models from these
      different training sets
     
-1. View the different models with the Previous and Next buttons
+1. View the different models with the Previous and Next buttons. View the training set & predictions, with
+   wrong predictions highlighted. View the Classification Accuracy for each model + training set, along with average CA.
 
 1. Click Save Results to choose a directory to output the generated files.
 

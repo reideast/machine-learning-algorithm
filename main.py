@@ -150,7 +150,7 @@ class Application(tk.Frame):
         self.cols_radio_var = None
 
         self.button_process_csv = tk.Button(self.subframe_column_name_inputs_area)
-        self.button_process_csv["text"] = "Load CSV File"
+        self.button_process_csv["text"] = "Update Metadata"
         self.button_process_csv["command"] = self.save_file_attributes
         self.image_process_csv = tk.PhotoImage(file="images/data.png")
         self.button_process_csv["compound"] = tk.LEFT
@@ -326,7 +326,7 @@ class Application(tk.Frame):
         label_training_accuracy.pack()
         self.label_training_accuracy.append(label_training_accuracy)
 
-        subframe_aggregate_classification_accuracy = tk.LabelFrame(subframe_ca_container, text="Aggregate CA", padx=5, pady=5)
+        subframe_aggregate_classification_accuracy = tk.LabelFrame(subframe_ca_container, text="Average CA", padx=5, pady=5)
         subframe_aggregate_classification_accuracy.pack(padx=5, pady=5, side=tk.BOTTOM, fill=tk.X)
         label_aggregate_prediction_score = tk.Label(subframe_aggregate_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 14), justify=tk.LEFT)
         label_aggregate_prediction_score.pack()
@@ -355,26 +355,19 @@ class Application(tk.Frame):
         if chosen_file is not "":
             self.filename = chosen_file  # Temp variable used so cancelling the dialog when a file had already been loaded will not prevent proceeding
 
-            self.is_file_prepared = False
-
-            self.table_loaded_input.destroy()
-            self.table_loaded_input = ttk.Treeview(self.input_table_frame, show="headings", columns="message_column")
-            self.table_loaded_input.heading("message_column", text="Full dataset not yet loaded")
-            self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-            # Reconnect scrollbar events to new Treeview object
-            self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
-            self.table_scrollbar.config(command=self.table_loaded_input.yview)
-
-            Case.label_column = -1
             self.button_train["state"] = tk.DISABLED
             self.button_previous["state"] = tk.DISABLED
             self.button_next["state"] = tk.DISABLED
             self.button_save["state"] = tk.DISABLED
-            logging.debug("Preparing to choose attributes for data file: " + self.filename)
 
             # Recreate column attribute picker GUI elements for user to provide column names
             self.add_col_options()
             self.show_subframe_columns()
+
+            # Call save_file_attrib, even though user has not entered any column names
+            # This will make it so the file is loaded, but the columns will have default names
+            self.is_file_prepared = False
+            self.save_file_attributes()
 
     def save_file_attributes(self):
         """
@@ -412,14 +405,18 @@ class Application(tk.Frame):
             try:
                 self.master_data_set = parse_csv(self.filename)
             except ParseCsvError as error:
-                tk.messagebox.showerror("Parse CSV Error", "Error while reading file %s\n\nBad line: %s\n\nItem could note be parsed to a float: %s"
-                                        % (self.filename, error.bad_line, error.bad_item))
+                if self.is_file_prepared:  # This indicates that this file has already been read once, and then user changed the label column. So, make it an error
+                    tk.messagebox.showerror("Parse CSV error", "Error while reading file %s\n\nBad line: %s\n\nItem could note be parsed to a float: %s"
+                                            % (self.filename, error.bad_line, error.bad_item))
+                else:
+                    tk.messagebox.showinfo("Parse CSV error", "While reading file, a data point could not be read as a number: '%s'\n\nYou may need to select a different column as the label column."
+                                           % error.bad_item)
                 # Reset the GUI with no dataset loaded!
                 # This is done so the user does not see data there still, and ignore the error to continue training expecting that the file actually loaded
                 self.master_data_set = None
                 self.button_train["state"] = tk.DISABLED
                 self.is_file_prepared = False
-                return  # Do not continue with this method
+                return  # Do not continue loading file
 
             # Fill table with data from file
             self.table_loaded_input.tag_configure("even", background="#eeeeee")
@@ -561,7 +558,9 @@ class Application(tk.Frame):
                         for case in self.testing_set[idx]:
                             columns = [str(item) for item in case.attributes + [str(case.label), str(case.predicted)]]
                             csv_file.write(",".join(columns) + "\n")
+
                 logging.debug("Files with results and images of models have been saved")
+                messagebox.showinfo("Save successful", "Data files & tree graphs saved")
         else:
             messagebox.showwarning("No model trained", "Cannot save model results: no model has been trained")
 
