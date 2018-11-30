@@ -43,6 +43,7 @@ class Application(tk.Frame):
         self.graph_photoimage_img_data = []
         self.graph_png_img_data = []
         self.current_results_subframe_shown = -1
+        self.can_make_graphs = True
 
         # ##################   Frame Top: Control Buttons   ################## #
         self.frame_controls = tk.Frame(self)
@@ -462,17 +463,28 @@ class Application(tk.Frame):
                 train_score = score(training_set)
                 self.train_score.append(train_score)
 
-                # Make Graph using pydot python objects and return as a tk PhotoImage & PNG
-                graph_photoimage_img_data, graph_png_img_data = graph_model(model)
-                self.graph_photoimage_img_data.append(graph_photoimage_img_data)
-                self.graph_png_img_data.append(graph_png_img_data)
+                if self.can_make_graphs:
+                    try:
+                        # Make Graph using pydot python objects and return as a tk PhotoImage & PNG
+                        graph_photoimage_img_data, graph_png_img_data = graph_model(model)
+                        self.graph_photoimage_img_data.append(graph_photoimage_img_data)
+                        self.graph_png_img_data.append(graph_png_img_data)
 
-                # Paint image
-                if self.canvas_img_data[i] is not None:
-                    self.tree_canvas[i].delete(self.canvas_img_data[i])  # Remove existing image objects
-                self.canvas_img_data[i] = self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
-                # Reconfigure scrolling area of canvas to the area of the current graph
-                self.tree_canvas[i].config(scrollregion=(0, 0, graph_photoimage_img_data.width(), graph_photoimage_img_data.height()))
+                        # Paint image
+                        if self.canvas_img_data[i] is not None:
+                            self.tree_canvas[i].delete(self.canvas_img_data[i])  # Remove existing image objects
+                        self.canvas_img_data[i] = self.tree_canvas[i].create_image(0, 0, image=graph_photoimage_img_data, anchor=tk.NW)
+                        # Reconfigure scrolling area of canvas to the area of the current graph
+                        self.tree_canvas[i].config(scrollregion=(0, 0, graph_photoimage_img_data.width(), graph_photoimage_img_data.height()))
+                    except OSError as e:
+                        if "dot" in e.strerror:
+                            logging.error("Graphviz 'dot' executable not found on PATH. No more graphs will be attempted this session")
+                            messagebox.showwarning("Graphviz not found", "Graphviz's dot executable was not found.\nPlease install Graphviz, and if on Windows, add the" +
+                                                   " Graphviz bin directory to the PATH\n\nNo more graphs will be attempted to be generated during this session, but the" +
+                                                   " models can still be tested as normal.")
+                            self.can_make_graphs = False
+                        else:
+                            raise  # This was not the error for "dot not found", so throw it onward
 
                 # Write score
                 self.label_prediction_score[i]["text"] = "%.1f%%" % (test_score * 100)
@@ -533,9 +545,10 @@ class Application(tk.Frame):
                 csv_header_row = ",".join(Case.attributes_names + [Case.label_name, "predicted"]) + "\n"
                 for idx in range(NUM_MODELS):
                     # Write PNG file out
-                    png_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "png"))
-                    with open(png_filename, "wb") as png_file:
-                        png_file.write(self.graph_png_img_data[idx])
+                    if self.can_make_graphs:  # Don't attempt to write PNGs if Graphviz wasn't installed
+                        png_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "png"))
+                        with open(png_filename, "wb") as png_file:
+                            png_file.write(self.graph_png_img_data[idx])
 
                     # Write CSV file out
                     csv_filename = os.path.join(chosen_folder, filename_template % (idx + 1, "csv"))
