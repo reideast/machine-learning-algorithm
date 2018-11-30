@@ -126,6 +126,17 @@ class Application(tk.Frame):
         self.frame_bottom.grid_columnconfigure(0, weight=1)
 
         # ##################   Frame Bottom: Results   ################## #
+        # Subframe to instruct how to get started
+        self.frame_home = tk.Frame(self.frame_bottom)
+        self.frame_home.grid(row=0, column=0, sticky="nsew")
+        self.label_instructions_header = tk.Label(self.frame_home, font=("TkDefaultFont", 22),
+                                                       text="Decision Tree Machine Learning")
+        self.label_instructions_header.pack(padx=20, pady=20)
+        self.label_instructions_body = tk.Label(self.frame_home, font=("TkDefaultFont", 12),
+                                                       text="Please click Load Data File above to get started.")
+        self.label_instructions_body.pack(padx=20)
+
+        # ##################   Frame Bottom: Results   ################## #
         # Subframe to show results of the model; Make ten of them into arrays of GUI elements
         self.subframe_results = []
         self.tree_canvas = []
@@ -179,9 +190,10 @@ class Application(tk.Frame):
         self.table_loaded_input.config(yscrollcommand=self.table_scrollbar.set)
         self.table_scrollbar.config(command=self.table_loaded_input.yview)
 
-        # ##################   Finalise Window Building   ################## #
         self.add_col_options()  # Add default options, no data
-        self.show_subframe_columns()
+
+        # ##################   Finalise Window Building   ################## #
+        self.show_subframe_home()
 
     # ##################   Methods to support switching pages   ################### #
 
@@ -229,6 +241,12 @@ class Application(tk.Frame):
             self.show_subframe_results(0)
         else:
             self.show_subframe_results(self.current_results_subframe_shown + 1)
+
+    def show_subframe_home(self):
+        if self.current_results_subframe_shown < 0:  # Only do the work of disabling input boxes if that frame was already on top
+            self.disable_subframe_columns()
+        self.current_results_subframe_shown = -1
+        self.frame_home.tkraise()
 
     # Add variable number of text/check boxes to input column labels
     def add_col_options(self):
