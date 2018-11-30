@@ -51,23 +51,6 @@ class Application(tk.Frame):
 
         pack_options_button = {"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 4, "ipady": 4}
 
-        # DEBUG: Cheater buttons
-        self.button_cheat = tk.Button(self.frame_controls)
-        self.button_cheat["command"] = self.cheater_shortcut
-        self.image_cheat = tk.PhotoImage(file="images/process.png")
-        self.button_cheat["image"] = self.image_cheat
-        # self.button_cheat.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
-        self.button_cheat_prev = tk.Button(self.frame_controls)
-        self.button_cheat_prev["command"] = lambda: self.show_subframe_columns()
-        self.image_cheat_prev = tk.PhotoImage(file="images/previous.png")
-        self.button_cheat_prev["image"] = self.image_cheat_prev
-        # self.button_cheat_prev.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
-        self.button_cheat_next = tk.Button(self.frame_controls)
-        self.button_cheat_next["command"] = lambda: self.show_subframe_results(0)
-        self.image_cheat_next = tk.PhotoImage(file="images/next.png")
-        self.button_cheat_next["image"] = self.image_cheat_next
-        # self.button_cheat_next.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
-
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
         self.button_load_file["command"] = self.load_file
@@ -291,8 +274,8 @@ class Application(tk.Frame):
 
         # TODO: Checkbox for each column to mark it as categorical vs. continuous? Will need to rework algorithm s.t. it can handle non-continuous values
 
-        # DEBUG:
-        if DEBUG and "owls.csv" in self.filename:  # also guards against filename not being set yet
+        # Skip over re-typing the column names every time for owls.csv
+        if DEBUG and "owls.csv" in self.filename:
             for idx, name in enumerate(["body-length", "wing-length", "body-width", "wing-width", "type"]):
                 self.cols_text_boxes[idx].insert(0, name)
 
@@ -339,7 +322,6 @@ class Application(tk.Frame):
         label_prediction_score.pack()
         self.label_prediction_score.append(label_prediction_score)
 
-        # DEBUG: accuracy of training set
         label_training_accuracy = tk.Label(subframe_classification_accuracy, text="xx.x%", font=("TkDefaultFont", 10), justify=tk.LEFT)
         label_training_accuracy.pack()
         self.label_training_accuracy.append(label_training_accuracy)
@@ -364,16 +346,6 @@ class Application(tk.Frame):
         self.scrollbar_table_prediction.append(scrollbar_table_prediction)
 
         return subframe_results
-
-    # DEBUG: Load up owls.csv quickly
-    def cheater_shortcut(self):
-        self.filename = "owls.csv"
-        self.add_col_options()
-        self.show_subframe_columns()
-
-        self.save_file_attributes()
-
-        self.train_on_data()
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
@@ -462,8 +434,6 @@ class Application(tk.Frame):
 
     def train_on_data(self):
         if self.master_data_set is not None:
-            # TODO: Need to implement some kind of GUI spinner while training is ongoing?
-
             # Clear previous models before re-training
             self.training_set = []
             self.testing_set = []
@@ -492,7 +462,7 @@ class Application(tk.Frame):
                 test_score = score(testing_set)
                 self.test_score.append(test_score)
 
-                # DEBUG: Also score the training set, which reveals confidence in the algorithm
+                # Also score on the training set, which shows the confidence in the model itself (but usually can't be 100%, because of majority-class leaves)
                 test(model, training_set)
                 train_score = score(training_set)
                 self.train_score.append(train_score)
@@ -522,7 +492,7 @@ class Application(tk.Frame):
 
                 # Write score
                 self.label_prediction_score[i]["text"] = "%.1f%%" % (test_score * 100)
-                self.label_training_accuracy[i]["text"] = "Testing Acc: %.1f%%" % (train_score * 100)
+                self.label_training_accuracy[i]["text"] = "Training Set: %.1f%%" % (train_score * 100)
 
                 # Put results into datatable
                 self.table_predictions[i].destroy()
