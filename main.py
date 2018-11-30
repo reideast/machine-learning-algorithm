@@ -429,7 +429,7 @@ class Application(tk.Frame):
             self.table_loaded_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             # Create column headers
             for idx, item in enumerate(Case.attributes_names + [Case.label_name]):  # Label columns
-                self.table_loaded_input.column(str(idx), minwidth=5, width=50)
+                self.table_loaded_input.column(str(idx), minwidth=5, width=20)
                 self.table_loaded_input.heading(str(idx), text=item, anchor="w")
 
             # Reconnect scrollbar events to new Treeview object
@@ -530,10 +530,10 @@ class Application(tk.Frame):
                 self.table_predictions[i].pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
                 # Create column headers
                 for j, item in enumerate(Case.attributes_names):
-                    self.table_predictions[i].column(str(j), minwidth=5, width=50)
+                    self.table_predictions[i].column(str(j), minwidth=5, width=20)
                     self.table_predictions[i].heading(str(j), text=item, anchor="w")
                 for j, item in enumerate([Case.label_name, "Predicted"]):
-                    self.table_predictions[i].column(str(j + len(Case.attributes_names)), minwidth=10, width=100)
+                    self.table_predictions[i].column(str(j + len(Case.attributes_names)), minwidth=10, width=40)
                     self.table_predictions[i].heading(str(j + len(Case.attributes_names)), text=item, anchor="w")
                 # Create table contents
                 self.table_predictions[i].tag_configure("even", background="#eeeeee")
