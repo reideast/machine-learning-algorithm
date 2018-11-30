@@ -4,3 +4,6 @@
 *.url
 __pycache__
 .idea
+*.csv
+*.tab
+lib/
