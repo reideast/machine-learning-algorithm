@@ -575,6 +575,6 @@ CANVAS_HEIGHT = 600
 NUM_MODELS = 10
 
 root = tk.Tk()
-root.geometry("600x700")
+root.geometry("650x700")
 master_app = Application(master=root)
 master_app.mainloop()
