@@ -162,7 +162,6 @@ class Application(tk.Frame):
         self.subframe_col_options = tk.Frame(self.subframe_column_name_inputs_area)
         self.subframe_col_options.pack()
         self.subframe_col_options_inner = None
-        self.cols_labels = None
         self.cols_text_boxes = None
         self.cols_radio_buttons = None
         self.cols_radio_var = None
@@ -258,7 +257,7 @@ class Application(tk.Frame):
         if self.subframe_col_options_inner is not None:
             self.subframe_col_options_inner.destroy()
         self.subframe_col_options_inner = tk.Frame(self.subframe_col_options)
-        self.subframe_col_options_inner.grid()
+        self.subframe_col_options_inner.pack(expand=True, fill="both")
 
         if self.filename is not "":
             row = read_one(self.filename)
@@ -267,24 +266,26 @@ class Application(tk.Frame):
             num_cols = 4  # generate with four columns by default
             row = [""] * num_cols
 
-        self.cols_labels = []
+        # Create empty "padding columns" at the beginning and end
+        self.subframe_col_options_inner.grid_columnconfigure(0, minsize=5)
+        self.subframe_col_options_inner.grid_columnconfigure(num_cols + 1, minsize=5)
+        # Allow all columns (that have controls in them) to resize
+        for col_num in range(num_cols):
+            self.subframe_col_options_inner.grid_columnconfigure(col_num + 1, weight=1)
+
         self.cols_text_boxes = []
         self.cols_radio_buttons = []
         self.cols_radio_var = IntVar()
         for idx in range(num_cols):
-            label = tk.Label(self.subframe_col_options_inner,
-                             text="#" + str(idx + 1) + ": " + row[idx])
-            label.grid(row=0, column=idx)
-            self.cols_labels.append(label)
+            tk.Label(self.subframe_col_options_inner, text="#" + str(idx + 1) + ": " + row[idx]).grid(row=0, column=idx + 1)
         for idx in range(num_cols):
-            text_box = tk.Entry(self.subframe_col_options_inner, width=(90 // num_cols))
-            text_box.grid(row=1, column=idx)
+            text_box = tk.Entry(self.subframe_col_options_inner)
+            text_box.grid(row=1, column=idx + 1)
             self.cols_text_boxes.append(text_box)
         for idx in range(num_cols):
             radio = tk.Radiobutton(self.subframe_col_options_inner,
                                    text="Label", variable=self.cols_radio_var, value=idx)
-            # TODO: Perhaps add a tooltip (?) here for further explanation
-            radio.grid(row=2, column=idx)
+            radio.grid(row=2, column=idx + 1)
             self.cols_radio_buttons.append(radio)
         self.cols_radio_buttons[num_cols - 1].select()  # Select last in list, since many data sets have the final column as the label
 
@@ -604,7 +605,6 @@ CANVAS_HEIGHT = 600
 NUM_MODELS = 10
 
 root = tk.Tk()
-root.minsize(1, 700)  # Must be at least this tall
-# root.geometry("1x700")  # DEBUG: weird, very skinny
+root.geometry("600x700")
 master_app = Application(master=root)
 master_app.mainloop()
