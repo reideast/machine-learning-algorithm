@@ -564,7 +564,7 @@ class Application(tk.Frame):
         else:
             messagebox.showwarning("No model trained", "Cannot save model results: no model has been trained")
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
