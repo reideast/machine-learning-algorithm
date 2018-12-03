@@ -145,27 +145,23 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
         classes_counts = count_classes_in_dataset(data_cases)
         total_entropy = get_entropy(classes_counts, len(data_cases))
 
-        # Duplicate all values for this attribute in this data subset (so that they can be sorted)
-        # TODO: Optimisation: Is there any reason why the whole data_cases List couldn't be sorted and used here?? it's already a duplicated list, only to be used for this node
-        all_attribute_values = []
-        for data_case in data_cases:
-            all_attribute_values.append(data_case.attributes[attrib])
-        all_attribute_values.sort()
+        # Sort the data cases on this attribute's column. Even though data_cases is a shared list between the other calls to this method, they'll just sort it all over again
+        data_cases.sort(key=lambda case: case.attributes[attrib])
 
         all_thresholds = []
-        for idx in range(len(all_attribute_values) - 1):
-            if all_attribute_values[idx + 1] - all_attribute_values[idx] > FLOATING_POINT_EPSILON:  # This prevents Threshold equalling a data point if data point is duplicate
-                all_thresholds.append((all_attribute_values[idx] + all_attribute_values[idx + 1]) / 2)
+        for idx in range(len(data_cases) - 1):
+            if data_cases[idx + 1].attributes[attrib] - data_cases[idx].attributes[attrib] > FLOATING_POINT_EPSILON:  # This prevents Threshold equalling a data point if data point is duplicate
+                all_thresholds.append((data_cases[idx].attributes[attrib] + data_cases[idx + 1].attributes[attrib]) / 2)
 
         if len(all_thresholds) == 0:
             # When ALL the data_cases have an identical value for attrib, the above guard against duplicates means that there are NO thresholds to try
             # So, just choose the first date case's attrib as threshold
-            gain = get_info_gain(data_cases, total_entropy, attrib, all_attribute_values[0])
-            return gain, [all_attribute_values[0]]
+            gain = get_info_gain(data_cases, total_entropy, attrib, data_cases[0].attributes[attrib])
+            return gain, [data_cases[0].attributes[attrib]]
         elif len(all_thresholds) == 1:  # Only one threshold, the smallest possible (since this function will only be called when n >= 2)
             gain = get_info_gain(data_cases, total_entropy, attrib, all_thresholds[0])
             return gain, [all_thresholds[0]]
-        else:  # At least two thresholds
+        else:  # At least two thresholds, i.e. at least three data points
             potential_info_gains = []
             potential_thresholds = []
 
@@ -224,15 +220,16 @@ def get_entropy(classes_counts: Dict[str, int], total_of_all_counts: int) -> flo
     return entropy
 
 
+# TODO: Merge this with below method?
 def get_info_gain(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, threshold: float) -> float:
     """
     Calculate the information gained by splitting these data cases into subsets, split upon this attribute at threshold
     :param data_cases: Data set
+    :param entropy_for_data_cases: Total entropy for this data set. Calculated outside this method because it's reused for other thresholds
     :param attrib: Index of the attribute to split on
     :param threshold: Value of this attribute, below which will go to the lft tree
     :return:
     """
-
     left_list = []
     right_list = []
     for item in data_cases:
