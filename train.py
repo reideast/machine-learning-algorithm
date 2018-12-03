@@ -19,7 +19,7 @@ def train(data_cases):
     model.decision_tree = buildModelTreeRecursive(data_cases)
     return model
 
-    
+
 def buildModelTreeRecursive(data_cases):
     tree = DecisionTree()
     tree.numCases = len(data_cases)
@@ -29,25 +29,25 @@ def buildModelTreeRecursive(data_cases):
 
     # Terminating case 1: No data cases remain
     # TODO: Rework recursive method s.t. parent metadata is passed down, and a tree.predicted + tree.numCasesMajorityClass pair can be stored FOR THE PARENT's plurality
-    if len(data_cases) == 0: 
+    if len(data_cases) == 0:
         tree.isLeaf = True
-        tree.predicted = "Default" 
+        tree.predicted = "Default"
         return tree
-    
-    countClasses = countClassesInSet(data_cases)       
+
+    countClasses = countClassesInSet(data_cases)
     # Terminating case 2    
     if len(countClasses) == 1:
         tree.isLeaf = True
-        tree.predicted = list(countClasses.keys())[0] 
+        tree.predicted = list(countClasses.keys())[0]
         return tree
-    
+
     # Terminating Case 3  
     haveFoundAnyNonExamined = False
-      
+
     for alreadyExamined in data_cases[0].attributesAlreadyExamined:
         if alreadyExamined == False:
             haveFoundAnyNonExamined = True
-        
+
     if haveFoundAnyNonExamined == False:
         tree.isLeaf = True
         max = -1
@@ -58,8 +58,8 @@ def buildModelTreeRecursive(data_cases):
                 maxIndex = idx
         tree.predicted = list(countClasses.keys())[maxIndex]
         tree.numCasesMajorityClass = max
-        return tree              
-    
+        return tree
+
     # Internal Node still needs split
     infoGained = []
     thresholds = []  # TODO: Support n-ary nodes with n-1 thresholds OR no threshold and n = number of categorical attribute values to EQUAL
@@ -67,7 +67,7 @@ def buildModelTreeRecursive(data_cases):
         info, threshold = getBestInfoGain(data_cases, attrib)
         infoGained.append(info)
         thresholds.append(threshold)
-        
+
     # Choose Best One
     max = -1.0
     best = -1
@@ -75,7 +75,7 @@ def buildModelTreeRecursive(data_cases):
         if item > max:
             max = item
             best = idx
-    tree.splitAttribute = best 
+    tree.splitAttribute = best
     tree.threshold = thresholds[best]
     leftList = []
     rightList = []
@@ -86,25 +86,24 @@ def buildModelTreeRecursive(data_cases):
         else:
             rightList.append(item)
     tree.leftChild = buildModelTreeRecursive(leftList)
-    tree.rightChild = buildModelTreeRecursive(rightList)            
-    
+    tree.rightChild = buildModelTreeRecursive(rightList)
+
     return tree
 
-   
+
 def getBestInfoGain(data_cases, attrib):
-    
     if data_cases[0].attributesAlreadyExamined[attrib]:
-            
+
         return -1, -1  # This is a check to see if attributes have been examined or not for these data cases
     else:
         allAttributeValues = []
         for item in data_cases:
             allAttributeValues.append(item.attributes[attrib])
-            
+
         allAttributeValues.sort()
         pInfoGain = []
         pThresholds = []
-        
+
         for idx in range(len(allAttributeValues) - 1):
             if allAttributeValues[idx + 1] - allAttributeValues[idx] > 0.0001:  # This prevents Threshold equalling a data point if data point is duplicate
                 midValue = (allAttributeValues[idx] + allAttributeValues[idx + 1]) / 2
@@ -119,21 +118,20 @@ def getBestInfoGain(data_cases, attrib):
             gain = getInfoGain(data_cases, attrib, midValue)
             pInfoGain.append(gain)
             pThresholds.append(midValue)
-            
+
         max = -1.0
         best = -1
         for idx, item in enumerate(pInfoGain):
             if item > max:
                 max = item
                 best = idx
-       
+
         return pInfoGain[best], pThresholds[best]
 
-        
+
 def countClassesInSet(data_cases):
-    
     countClasses = {}
-    
+
     for case in data_cases:
         if case.label in countClasses:
             countClasses[case.label] += 1
@@ -153,7 +151,7 @@ def getEntropy(countClasses, totalCount):
 def getInfoGain(data_cases, attrib, threshold):
     countClasses = countClassesInSet(data_cases)
     totalEntropy = getEntropy(countClasses, len(data_cases))
-    
+
     leftList = []
     rightList = []
     for item in data_cases:
@@ -163,6 +161,5 @@ def getInfoGain(data_cases, attrib, threshold):
             rightList.append(item)
     leftEntropy = getEntropy(countClassesInSet(leftList), len(leftList))
     rightEntropy = getEntropy(countClassesInSet(rightList), len(rightList))
-    
+
     return totalEntropy - leftEntropy * (len(leftList) / len(data_cases)) - rightEntropy * (len(rightList) / len(data_cases))
-                

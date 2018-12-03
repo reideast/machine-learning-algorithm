@@ -51,6 +51,13 @@ class Application(tk.Frame):
 
         pack_options_button = {"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 4, "ipady": 4}
 
+        # DEBUG: Cheater buttons
+        self.button_cheat = tk.Button(self.frame_controls)
+        self.button_cheat["command"] = self.cheater_shortcut
+        self.image_cheat = tk.PhotoImage(file="images/process.png")
+        self.button_cheat["image"] = self.image_cheat
+        self.button_cheat.pack({"side": tk.LEFT, "padx": 6, "pady": 6, "ipadx": 5, "ipady": 5})
+
         self.button_load_file = tk.Button(self.frame_controls)
         self.button_load_file["text"] = "Load Data File"
         self.button_load_file["command"] = self.load_file
@@ -346,6 +353,16 @@ class Application(tk.Frame):
         self.scrollbar_table_prediction.append(scrollbar_table_prediction)
 
         return subframe_results
+
+    # DEBUG: Load up owls.csv quickly
+    def cheater_shortcut(self):
+        self.filename = "owls.csv"
+        self.add_col_options()
+        self.show_subframe_columns()
+
+        self.save_file_attributes()
+
+        self.train_on_data()
 
     # ##################   Methods called by buttons to do main functionality   ################## #
     def load_file(self):
