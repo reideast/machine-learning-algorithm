@@ -315,6 +315,9 @@ class Application(tk.Frame):
         elif DEBUG and "autoimmune_extra_category.csv" in self.filename:
             for idx, name in enumerate(["Age", "Blood_Pressure", "BMI", "Plasma_level", "Autoimmune_Disease", "Adverse_events", "Drug_in_serum", "Liver_function", "colour", "Activity_test", "Secondary_test"]):
                 self.cols_text_boxes[idx].insert(0, name)
+        elif DEBUG and "tennis.csv" in self.filename:
+            for idx, name in enumerate(["Outlook", "Temp", "Humidity", "Windy", "Play?"]):
+                self.cols_text_boxes[idx].insert(0, name)
 
     def make_single_results_frame(self) -> tk.Frame:
         """
