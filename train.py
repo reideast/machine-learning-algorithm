@@ -9,25 +9,26 @@
 # Teamwork Attribution: This file was written by James Quiafe, with some planning and pair programming with Andrew East
 
 from classes.Case import Case
-from classes.Model import Model, Tree
+from classes.Model import Model, Tree as DecisionTree, InternalNode, PredictionNode
 from math import log
 
 
 def train(data_cases):
     model = Model()
-    model.train = data_cases
-    model.treeRoot = buildModelTreeRecursive(data_cases)
+    model.training_set = data_cases
+    model.decision_tree = buildModelTreeRecursive(data_cases)
     return model
 
     
 def buildModelTreeRecursive(data_cases):
-    tree = Tree()
+    tree = DecisionTree()
     tree.numCases = len(data_cases)
 
-    Tree.next_unique_id += 1
-    tree.unique_id = Tree.next_unique_id
+    tree.unique_id = DecisionTree.NEXT_UNIQUE_ID
+    DecisionTree.NEXT_UNIQUE_ID += 1
 
-    # Terminating case 1
+    # Terminating case 1: No data cases remain
+    # TODO: Rework recursive method s.t. parent metadata is passed down, and a tree.predicted + tree.numCasesMajorityClass pair can be stored FOR THE PARENT's plurality
     if len(data_cases) == 0: 
         tree.isLeaf = True
         tree.predicted = "Default" 
@@ -61,7 +62,7 @@ def buildModelTreeRecursive(data_cases):
     
     # Internal Node still needs split
     infoGained = []
-    thresholds = []
+    thresholds = []  # TODO: Support n-ary nodes with n-1 thresholds OR no threshold and n = number of categorical attribute values to EQUAL
     for attrib in range(len(Case.attributes_names)):
         info, threshold = getBestInfoGain(data_cases, attrib)
         infoGained.append(info)

@@ -15,7 +15,9 @@ class Case:
     # These are class-level variables, a Python idiom similar to "static"
     label_column = -1  # integer, index of label in the CSV file
     attributes_names = []  # list of strings, the user-defined names for each column, all columns but label
+    # TODO: For categorical attributes, count and store list of observed categories during file parse
     label_name = None  # string, the user-defined name for the label column
+    # TODO: In order to store confidence in all classes, even those not observed, store list of all observed labels during file parse
 
     def __init__(self, csv_line):
         self.label = None  # string, the actual class of this data case

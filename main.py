@@ -564,7 +564,7 @@ class Application(tk.Frame):
         else:
             messagebox.showwarning("No model trained", "Cannot save model results: no model has been trained")
 
-DEBUG = False
+DEBUG = True
 if DEBUG:
     logging.basicConfig(level=logging.DEBUG)
 
@@ -572,6 +572,8 @@ CANVAS_WIDTH = 600
 CANVAS_HEIGHT = 600
 
 NUM_MODELS = 10
+
+NUM_MODELS = 3  # DEBUG
 
 root = tk.Tk()
 root.geometry("650x700")
