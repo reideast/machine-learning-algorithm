@@ -10,24 +10,31 @@
 
 import logging
 
+from typing import List, Any, ClassVar
+
+
+# TODO: Maybe this could be two classes:
+#       Dataset, which holds information on whole dataset: num attributes, names of columns, (maybe List of Cases)
+#       Case, which is an individual case. It might be a sub class of Dataset or maybe just stored as List of Cases in Dataset
 
 class Case:
     # These are class-level variables, a Python idiom similar to "static"
-    label_column = -1  # integer, index of label in the CSV file
-    attributes_names = []  # list of strings, the user-defined names for each column, all columns but label
+    label_column: ClassVar[int] = -1  # integer, index of label in the CSV file
+    attributes_names: ClassVar[List[str]] = []  # list of strings, the user-defined names for each column, all columns but label
     # TODO: For categorical attributes, count and store list of observed categories during file parse
-    label_name = None  # string, the user-defined name for the label column
+    label_name: ClassVar[str] = None  # string, the user-defined name for the label column
+
     # TODO: In order to store confidence in all classes, even those not observed, store list of all observed labels during file parse
 
     def __init__(self, csv_line):
-        self.label = None  # string, the actual class of this data case
-        self.predicted = None  # string, the predicted class, if this case is used for testing
-        self.attributes = []  # list of strings, all columns but label
-        self.attributesAlreadyExamined = []  # list of booleans, same length as self.attributes
+        self.label: str = None  # string, the actual class of this data case
+        self.predicted: str = None  # string, the predicted class, if this case is used for testing
+        self.attributes: List[float] = []  # list of strings, all columns but label
+        self.attributesAlreadyExamined: List[bool] = []  # list of booleans, same length as self.attributes
 
         self.__parse_csv_line(csv_line)
 
-    def __parse_csv_line(self, csv_line):
+    def __parse_csv_line(self, csv_line: str) -> None:
         """
         Use data within csv_line to build up this Case's attributes and label
         :param csv_line: str, should be a line read from a CSV file (and still has the newline character at the end)
@@ -50,7 +57,7 @@ class Case:
 
 
 class ParseCsvError(Exception):
-    def __init__(self, bad_item, bad_line):
+    def __init__(self, bad_item: Any, bad_line: str):
         self.bad_item = bad_item
         self.bad_line = bad_line
 

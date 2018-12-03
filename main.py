@@ -8,18 +8,17 @@
 
 # Teamwork Attribution: This file was written by Andrew East
 
-import tkinter as tk
-from tkinter import filedialog, messagebox, IntVar, ttk
-
-from datetime import datetime
-import os
 import logging
+import os
+import tkinter as tk
+from datetime import datetime
+from tkinter import filedialog, messagebox, IntVar, ttk
 
 from about import get_about_message
 from classes.Case import Case, ParseCsvError
 from graph_tree import graph_model
 from parse_csv import parse_csv, read_one
-from split import clone_spliter
+from split import clone_splitter
 from test import test, score
 from train import train
 
@@ -120,10 +119,10 @@ class Application(tk.Frame):
         self.frame_home = tk.Frame(self.frame_bottom)
         self.frame_home.grid(row=0, column=0, sticky="nsew")
         self.label_instructions_header = tk.Label(self.frame_home, font=("TkDefaultFont", 22),
-                                                       text="Decision Tree Machine Learning")
+                                                  text="Decision Tree Machine Learning")
         self.label_instructions_header.pack(padx=20, pady=20)
         self.label_instructions_body = tk.Label(self.frame_home, font=("TkDefaultFont", 12),
-                                                       text="Please click Load Data File above to get started.")
+                                                text="Please click Load Data File above to get started.")
         self.label_instructions_body.pack(padx=20)
 
         # ##################   Frame Bottom: Results   ################## #
@@ -205,7 +204,7 @@ class Application(tk.Frame):
             radio["state"] = state
         self.button_process_csv["state"] = state
 
-    def show_subframe_results(self, idx):
+    def show_subframe_results(self, idx: int):
         if self.current_results_subframe_shown < 0:  # Only do the work of disabling input boxes if that frame was already on top
             self.disable_subframe_columns()
         self.subframe_results[idx].tkraise()
@@ -286,7 +285,7 @@ class Application(tk.Frame):
             for idx, name in enumerate(["body-length", "wing-length", "body-width", "wing-width", "type"]):
                 self.cols_text_boxes[idx].insert(0, name)
 
-    def make_single_results_frame(self):
+    def make_single_results_frame(self) -> tk.Frame:
         """
         Generate one of the ten GUI "pages" to hold a graph/table of results
         Appends elements that will be edited later to each of many arrays of GUI elements. (This may be the _least_ pure function I've ever written...)
@@ -426,7 +425,8 @@ class Application(tk.Frame):
                     tk.messagebox.showerror("Parse CSV error", "Error while reading file %s\n\nBad line: %s\n\nItem could note be parsed to a float: %s"
                                             % (self.filename, error.bad_line, error.bad_item))
                 else:
-                    tk.messagebox.showinfo("Parse CSV error", "While reading file, a data point could not be read as a number: '%s'\n\nYou may need to select a different column as the label column."
+                    tk.messagebox.showinfo("Parse CSV error",
+                                           "While reading file, a data point could not be read as a number: '%s'\n\nYou may need to select a different column as the label column."
                                            % error.bad_item)
                 # Reset the GUI with no dataset loaded!
                 # This is done so the user does not see data there still, and ignore the error to continue training expecting that the file actually loaded
@@ -463,7 +463,7 @@ class Application(tk.Frame):
                 logging.info("Training model #" + str(i + 1))
 
                 # Get a randomised split of the data set, cloned so the master set remains ready for re-use
-                training_set, testing_set = clone_spliter(self.master_data_set)
+                training_set, testing_set = clone_splitter(self.master_data_set)
                 self.training_set.append(training_set)
                 self.testing_set.append(testing_set)
 
@@ -525,8 +525,8 @@ class Application(tk.Frame):
                 self.table_predictions[i].tag_configure("mismatchOdd", foreground="#cc0000")
                 for j, case in enumerate(testing_set):
                     self.table_predictions[i].insert("", "end", values=[item for item in case.attributes + [case.label, case.predicted]],
-                                                  tags="mismatch" + ("Even" if j % 2 == 0 else "Odd") if case.predicted != case.label else ("even" if j % 2 == 0 else "odd")
-                                                  )
+                                                     tags="mismatch" + ("Even" if j % 2 == 0 else "Odd") if case.predicted != case.label else ("even" if j % 2 == 0 else "odd")
+                                                     )
                 # Reconnect scrollbar events to new Treeview object
                 self.table_predictions[i].config(yscrollcommand=self.scrollbar_table_prediction[i].set)
                 self.scrollbar_table_prediction[i].config(command=self.table_predictions[i].yview)
@@ -580,6 +580,7 @@ class Application(tk.Frame):
                 messagebox.showinfo("Save successful", "Data files & tree graphs saved")
         else:
             messagebox.showwarning("No model trained", "Cannot save model results: no model has been trained")
+
 
 DEBUG = True
 if DEBUG:

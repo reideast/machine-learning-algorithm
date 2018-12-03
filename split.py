@@ -10,11 +10,14 @@
 
 import copy
 from random import shuffle
+from typing import List
+
+from classes.Case import Case
 
 TESTING_RATIO = 3
 
 
-def clone_spliter(master_data_set):
+def clone_splitter(master_data_set: List[Case]) -> (List[Case], List[Case]):
     """
     Takes a list, clones it so it can be re-used later, and splits it into sets of size (n - 1)/n and 1/n where n = TESTING_RATIO
     :param master_data_set: A list, which will be deep copied to clone it.

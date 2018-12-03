@@ -9,7 +9,7 @@
 # Teamwork Attribution: This file was written by Andrew East
 
 
-def get_about_message():
+def get_about_message() -> str:
     return """Machine Learning Project
 
 By James Quaife (j.quiafe1@nuigalway.ie) 

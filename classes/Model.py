@@ -7,21 +7,24 @@
 # Supervisor: Dr. Michael Madden
 
 # Teamwork Attribution: This file was written by James Quiafe
+from typing import List
+
+from classes.Case import Case
 
 
 class Model:
     def __init__(self):
-        self.training_set = []
-        self.testing_set = []
-        self.decision_tree = None
-        
+        self.training_set: List[Case] = []
+        self.testing_set: List[Case] = []
+        self.decision_tree: Tree = None
+
 
 # TODO: isinstance(var, Class) == T/F
 class Tree:
-    NEXT_UNIQUE_ID = 0
+    NEXT_UNIQUE_ID: int = 0
 
     def __init__(self):
-        self.unique_id = -1  # Unique identifier needed to make nodes unique in Graphviz node tag strings
+        self.unique_id: int = None  # Unique identifier needed to make nodes unique in Graphviz node tag strings
 
 
 class InternalNode(Tree):
@@ -29,14 +32,15 @@ class InternalNode(Tree):
     InternalNode: An internal node of a Decision Tree
     Contains information on which attribute to split upon in this node, and what the criteria are to decide which direction to got on that split
     """
+
     def __init__(self):
         super().__init__()
-        self.splitAttribute = None
+        self.splitAttribute: int = None
 
-        self.threshold = None  # TODO: when implementing sub classes, delete this
+        self.threshold: float = None  # TODO: when implementing sub classes, delete this
 
-        self.leftChild = None  # TODO: Support 1 or 2 split points by allowing (2,3) trees
-        self.rightChild = None  # TODO: Support categorical attributes by allowing n-ary trees
+        self.leftChild: Tree = None  # TODO: Support 1 or 2 split points by allowing (2,3) trees
+        self.rightChild: Tree = None  # TODO: Support categorical attributes by allowing n-ary trees
         # TODO: When implementing subclasses, make this into a List
 
 
@@ -45,9 +49,10 @@ class ContinuousSplitNode(InternalNode):
     ContinuousSplitNode: An internal node which splits upon a continuous attribute, int or float
     Splits using threshold values to decide where the split should occur
     """
+
     def __init__(self):
         super().__init__()
-        self.thresholds = []  # len should be n - 1, where n = number of children
+        self.thresholds: List[float] = []  # len should be n - 1, where n = number of children
 
 
 class CategoricalSplitNode(InternalNode):
@@ -55,20 +60,23 @@ class CategoricalSplitNode(InternalNode):
     CategoricalSplitNode: An internal node which splits upon a categorical attribute
     Splits by seeing which category a data case's attribute has
     """
+
     def __init__(self):
         super().__init__()
-        self.childCategories = []  # len should be n, where n = number of children AND n = number of ALL categories for this attribute observed across entire train/test data set
+        self.childCategories: List[
+            str] = []  # len should be n, where n = number of children AND n = number of ALL categories for this attribute observed across entire train/test data set
 
 
 class PredictionNode(Tree):
     """
     PredictionNode: A leaf node of a Decision Tree
     """
+
     def __init__(self):
         super().__init__()
-        self.predicted = None
-        self.numCases = -1
-        self.numCasesMajorityClass = -1
+        self.predicted: str = None  # TODO: Change this to an index on Case's list of labels
+        self.numCases: int = -1
+        self.numCasesMajorityClass: int = -1
 
 
 class PredictionNodeConfidence(PredictionNode):

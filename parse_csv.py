@@ -8,10 +8,12 @@
 
 # Teamwork Attribution: This file was written by Andrew East
 
+from typing import List
+
 from classes.Case import Case
 
 
-def parse_csv(filename):
+def parse_csv(filename: str) -> List[Case]:
     """
     Read the whole file, creating a list of Cases, one for each row
     Depends on Case.parse_csv_line(self) to do the actual comma separating
@@ -28,7 +30,7 @@ def parse_csv(filename):
     return cases
 
 
-def read_one(filename):
+def read_one(filename: str) -> List[str]:
     """
     Read only the first row of the file, returning a list of the comma separated values for that row
     :param filename: str, path to the CSV file to read
