@@ -30,7 +30,7 @@ class Case:
         self.label: str = None  # string, the actual class of this data case
         self.predicted: str = None  # string, the predicted class, if this case is used for testing
         self.attributes: List[float] = []  # list of strings, all columns but label
-        self.attributesAlreadyExamined: List[bool] = []  # list of booleans, same length as self.attributes
+        self.attributes_already_examined: List[bool] = []  # list of booleans, same length as self.attributes
 
         self.__parse_csv_line(csv_line)
 
@@ -52,7 +52,7 @@ class Case:
                 except ValueError:
                     logging.error("Cannot parse attribute \"%s\" into a floating-point number" % item)
                     raise ParseCsvError(item, csv_line)
-                self.attributesAlreadyExamined.append(False)
+                self.attributes_already_examined.append(False)
         self.predicted = None
 
 

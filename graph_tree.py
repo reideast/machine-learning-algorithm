@@ -51,15 +51,15 @@ def __build_tree_graph(node: Tree, parent_node: GraphNode, graph: Graph) -> None
     :param graph: graph object, passed by reference, into which node/edge data will be built
     """
     if isinstance(node, InternalNode):
-        left_node = __make_node(node.leftChild)
+        left_node = __make_node(node.left_child)
         graph.add_node(left_node)
         graph.add_edge(pydot.Edge(parent_node, left_node, label="< %.1f" % node.threshold, fontsize="10.0"))
-        __build_tree_graph(node.leftChild, left_node, graph)
+        __build_tree_graph(node.left_child, left_node, graph)
 
-        right_node = __make_node(node.rightChild)
+        right_node = __make_node(node.right_child)
         graph.add_node(right_node)
         graph.add_edge(pydot.Edge(parent_node, right_node))
-        __build_tree_graph(node.rightChild, right_node, graph)
+        __build_tree_graph(node.right_child, right_node, graph)
 
 
 def __make_node(node: Tree) -> GraphNode:
@@ -71,12 +71,12 @@ def __make_node(node: Tree) -> GraphNode:
 
     # Build label
     if isinstance(node, PredictionNode):
-        if node.numCasesMajorityClass == -1:
+        if node.num_cases_majority_class == -1:
             node_label = node.predicted
         else:
-            node_label = "%s\n%.1f%% (%d/%d)" % (node.predicted, (100 * node.numCasesMajorityClass / node.numCases), node.numCasesMajorityClass, node.numCases)
+            node_label = "%s\n%.1f%% (%d/%d)" % (node.predicted, (100 * node.num_cases_majority_class / node.num_cases), node.num_cases_majority_class, node.num_cases)
     elif isinstance(node, InternalNode):
-        node_label = Case.attributes_names[node.splitAttribute]
+        node_label = Case.attributes_names[node.split_attribute]
     else:
         raise NotImplementedError("Other node types implemented yet")  # TODO
 

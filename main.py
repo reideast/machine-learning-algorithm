@@ -438,7 +438,7 @@ class Application(tk.Frame):
             # Fill table with data from file
             self.table_loaded_input.tag_configure("even", background="#eeeeee")
             for idx, case in enumerate(self.master_data_set):
-                self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="even" if idx % 2 == 0 else "")
+                self.table_loaded_input.insert("", "end", values=[[str(item) for item in case.attributes] + [case.label]], tags="even" if idx % 2 == 0 else "")
 
             # Enable next step in UI flow
             self.button_train["state"] = tk.NORMAL
@@ -589,9 +589,7 @@ if DEBUG:
 CANVAS_WIDTH = 600
 CANVAS_HEIGHT = 600
 
-NUM_MODELS = 10
-
-NUM_MODELS = 3  # DEBUG
+NUM_MODELS = 3  # DEBUG, should be 10
 
 root = tk.Tk()
 root.geometry("650x700")

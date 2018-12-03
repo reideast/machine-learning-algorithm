@@ -12,7 +12,7 @@ from math import log
 from typing import List, Dict
 
 from classes.Case import Case
-from classes.Model import Model, Tree as DecisionTree
+from classes.Model import Model, Tree as DecisionTree, PredictionNode, InternalNode
 
 FLOATING_POINT_EPSILON = 1.0E-13
 
@@ -30,35 +30,33 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
     :param data_cases: List of data cases to train this node on (reduced from total training set by ancestors)
     :return: A Tree node
     """
-    tree = DecisionTree()
-    tree.numCases = len(data_cases)
-
-    tree.unique_id = DecisionTree.NEXT_UNIQUE_ID
-    DecisionTree.NEXT_UNIQUE_ID += 1
+    # tree = DecisionTree()
+    # tree.num_cases = len(data_cases)
 
     # Terminating case 1: No data cases remain
-    # TODO: Rework recursive method s.t. parent metadata is passed down, and a tree.predicted + tree.numCasesMajorityClass pair can be stored FOR THE PARENT's plurality
+    # TODO: Rework recursive method s.t. parent metadata is passed down, and a tree.predicted + tree.num_cases_majority_class pair can be stored FOR THE PARENT's plurality
     if len(data_cases) == 0:
-        tree.isLeaf = True
+        tree = PredictionNode(len(data_cases))
         tree.predicted = "Default"
         return tree
 
     count_classes = count_classes_in_dataset(data_cases)
+
     # Terminating case 2    
     if len(count_classes) == 1:
-        tree.isLeaf = True
+        tree = PredictionNode(len(data_cases))
         tree.predicted = list(count_classes.keys())[0]
         return tree
 
     # Terminating Case 3  
     have_found_any_non_examined = False
 
-    for already_examined in data_cases[0].attributesAlreadyExamined:
+    for already_examined in data_cases[0].attributes_already_examined:
         if not already_examined:
             have_found_any_non_examined = True
 
     if not have_found_any_non_examined:
-        tree.isLeaf = True
+        tree = PredictionNode(len(data_cases))
         num_in_majority_class = -1
         majority_class_index = 0
         for idx, num_counted in enumerate(list(count_classes.values())):
@@ -66,15 +64,18 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
                 num_in_majority_class = num_counted
                 majority_class_index = idx
         tree.predicted = list(count_classes.keys())[majority_class_index]
-        tree.numCasesMajorityClass = num_in_majority_class
+        tree.num_cases_majority_class = num_in_majority_class
         return tree
 
     # This will not be a leaf node, so determine how this internal node should be split
+    tree = InternalNode()
+
     # Find information gains
     info_gains = []
     thresholds = []  # TODO: Support n-ary nodes with n-1 thresholds OR no threshold and n = number of categorical attribute values to EQUAL
     for attrib in range(len(Case.attributes_names)):  # TODO: get len info from Data
         info, threshold = get_best_info_gain_for_attribute(data_cases, attrib)
+        # TODO: Is there a way to return a tuple, then deconstruct it into .append() methods?
         info_gains.append(info)
         thresholds.append(threshold)
 
@@ -85,18 +86,20 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
         if num_counted > num_in_majority_class:
             num_in_majority_class = num_counted
             best = idx
-    tree.splitAttribute = best
+    tree.split_attribute = best
     tree.threshold = thresholds[best]
+
+    # Build subsets of the data set by splitting at that threshold
     left_list = []
     right_list = []
     for num_counted in data_cases:
-        num_counted.attributesAlreadyExamined[best] = True
+        num_counted.attributes_already_examined[best] = True
         if num_counted.attributes[best] < thresholds[best]:
             left_list.append(num_counted)
         else:
             right_list.append(num_counted)
-    tree.leftChild = build_model_tree_recursive(left_list)
-    tree.rightChild = build_model_tree_recursive(right_list)
+    tree.left_child = build_model_tree_recursive(left_list)
+    tree.right_child = build_model_tree_recursive(right_list)
 
     return tree
 
@@ -108,8 +111,8 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> (fl
     :param attrib: Index of the attribute column to attempt to split on
     :return: Tuple: Best threshold, best information gain (for that threshold)
     """
-    if data_cases[0].attributesAlreadyExamined[attrib]:
-        return -1, -1  # This indicates this attribute has actually already been utilised in an ancestor node
+    if data_cases[0].attributes_already_examined[attrib]:
+        return -1, -1  # This indicates this attribute has actually already been utilised in an ancestor node. -1 will never the largest data gain
     else:
         # Duplicate all values for this attribute in this data subset (so that they can be sorted)
         # TODO: Optimisation: Is there any reason why the whole data_cases List couldn't be sorted?? it's already a duplicated list, only to be used for this node

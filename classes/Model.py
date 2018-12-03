@@ -19,12 +19,13 @@ class Model:
         self.decision_tree: Tree = None
 
 
-# TODO: isinstance(var, Class) == T/F
 class Tree:
     NEXT_UNIQUE_ID: int = 0
 
     def __init__(self):
-        self.unique_id: int = None  # Unique identifier needed to make nodes unique in Graphviz node tag strings
+        # Unique identifier needed to make nodes unique in Graphviz node tag strings
+        self.unique_id: int = Tree.NEXT_UNIQUE_ID
+        Tree.NEXT_UNIQUE_ID += 1
 
 
 class InternalNode(Tree):
@@ -35,12 +36,12 @@ class InternalNode(Tree):
 
     def __init__(self):
         super().__init__()
-        self.splitAttribute: int = None
+        self.split_attribute: int = None
 
         self.threshold: float = None  # TODO: when implementing sub classes, delete this
 
-        self.leftChild: Tree = None  # TODO: Support 1 or 2 split points by allowing (2,3) trees
-        self.rightChild: Tree = None  # TODO: Support categorical attributes by allowing n-ary trees
+        self.left_child: Tree = None  # TODO: Support 1 or 2 split points by allowing (2,3) trees
+        self.right_child: Tree = None  # TODO: Support categorical attributes by allowing n-ary trees
         # TODO: When implementing subclasses, make this into a List
 
 
@@ -63,7 +64,7 @@ class CategoricalSplitNode(InternalNode):
 
     def __init__(self):
         super().__init__()
-        self.childCategories: List[
+        self.child_categories: List[
             str] = []  # len should be n, where n = number of children AND n = number of ALL categories for this attribute observed across entire train/test data set
 
 
@@ -72,11 +73,11 @@ class PredictionNode(Tree):
     PredictionNode: A leaf node of a Decision Tree
     """
 
-    def __init__(self):
+    def __init__(self, num_cases: int):
         super().__init__()
         self.predicted: str = None  # TODO: Change this to an index on Case's list of labels
-        self.numCases: int = -1
-        self.numCasesMajorityClass: int = -1
+        self.num_cases: int = num_cases
+        self.num_cases_majority_class: int = -1
 
 
 class PredictionNodeConfidence(PredictionNode):

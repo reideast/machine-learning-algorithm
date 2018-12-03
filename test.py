@@ -33,10 +33,10 @@ def __predict(node: Tree, case: Case) -> None:
         case.predicted = node.predicted
         # Note: If leaf node was not 100% one class, this just predicts the majority class. Which is chosen in 50/50 splits (or 33/33/33, etc) is non-deterministic in our algorithm
     elif isinstance(node, InternalNode):
-        if case.attributes[node.splitAttribute] < node.threshold:
-            __predict(node.leftChild, case)
+        if case.attributes[node.split_attribute] < node.threshold:
+            __predict(node.left_child, case)
         else:
-            __predict(node.rightChild, case)
+            __predict(node.right_child, case)
     else:
         raise NotImplementedError("Other node types implemented yet")  # TODO
 
