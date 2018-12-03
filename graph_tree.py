@@ -95,7 +95,7 @@ def __make_edge_labels(node: InternalNode) -> List[str]:
         for threshold in node.thresholds:
             labels.append("< %.1f" % threshold)  # TODO: format the middle threshold labels with range, e.g. n <= THIS < m
         labels.append("")
-        print(labels)
+        # print(labels)  # DEBUG
         return labels
     else:
         # TODO

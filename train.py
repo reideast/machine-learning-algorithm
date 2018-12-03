@@ -46,6 +46,7 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
     if len(count_classes) == 1:
         tree = PredictionNode(len(data_cases))
         tree.predicted = list(count_classes.keys())[0]
+        tree.num_cases_majority_class = len(data_cases)  # How many data cases made it to this node?
         return tree
 
     # Terminating Case 3  
