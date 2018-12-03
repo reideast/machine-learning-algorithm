@@ -141,31 +141,16 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
     if data_cases[0].attributes_already_examined[attrib]:
         return -1, [-1]  # This indicates this attribute has actually already been utilised in an ancestor node. -1 will never the largest data gain
     else:
+        # Optimisation: Calc entropy for this whole data set. It will be reused for each potential threshold
+        classes_counts = count_classes_in_dataset(data_cases)
+        total_entropy = get_entropy(classes_counts, len(data_cases))
+
         # Duplicate all values for this attribute in this data subset (so that they can be sorted)
         # TODO: Optimisation: Is there any reason why the whole data_cases List couldn't be sorted and used here?? it's already a duplicated list, only to be used for this node
         all_attribute_values = []
         for data_case in data_cases:
             all_attribute_values.append(data_case.attributes[attrib])
         all_attribute_values.sort()
-
-        # n = num attributes, indices 0..n-1
-        # thresholds, i.e. halfway between the nums, are  t
-        # a is first_threshold, b is second_threshold for those i,j
-        #                                                              n=8
-        #   --------------------------------------------------------------
-        #   |  0 |t|  1  |t|  2  |t|  3  |t|  4  |t|  5  |t|  6  |t|  7  |
-        #   --------------------------------------------------------------
-        #     i=0 a j=1  b                                                  first inner loop for i=0
-        #     i=0 a                                          j=6  b          last inner loop for i=0
-        #                                    i=4 a  j=5  b                  first inner loop for i=4
-        #                                    i=4 a           j=6  b          last inner loop for i=4
-        #                                           i=5 a    j=6  b         first inner loop for i=5 (and only)
-
-        # for i in range(len(all_attribute_values) - 2):
-        #     first_threshold = -all_attribute_values[i] + all_attribute_values[i + 1]
-        #     for j in range(i + 1, len(all_attribute_values) - 1):
-        #         second_threshold = -all_attribute_values[j] + all_attribute_values[j + 1]
-        # ...maybe let's not do it this way
 
         all_thresholds = []
         for idx in range(len(all_attribute_values) - 1):
@@ -175,44 +160,29 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
         if len(all_thresholds) == 0:
             # When ALL the data_cases have an identical value for attrib, the above guard against duplicates means that there are NO thresholds to try
             # So, just choose the first date case's attrib as threshold
-            gain = get_info_gain(data_cases, attrib, all_attribute_values[0])
+            gain = get_info_gain(data_cases, total_entropy, attrib, all_attribute_values[0])
             return gain, [all_attribute_values[0]]
         elif len(all_thresholds) == 1:  # Only one threshold, the smallest possible (since this function will only be called when n >= 2)
-            gain = get_info_gain(data_cases, attrib, all_thresholds[0])
+            gain = get_info_gain(data_cases, total_entropy, attrib, all_thresholds[0])
             return gain, [all_thresholds[0]]
         else:  # At least two thresholds
-            # print("Slices:")  # DEBUG
-            # print(all_thresholds)
-            # print(all_thresholds[:-1])
-            # print(all_thresholds[1:]) # replace 1 with i
             potential_info_gains = []
             potential_thresholds = []
 
-            # # DEBUG:
-            # print("All thresholds, then first, then last")
-            # print(all_thresholds)
-            # print(all_thresholds[0:1])
-            # print(all_thresholds[0])
-            # print(all_thresholds[-1:])
-            # print(all_thresholds[-1])
+            for i, first_threshold in enumerate(all_thresholds):
+                # One threshold only
+                gain = get_info_gain_multi_thresholds(data_cases, total_entropy, attrib, [first_threshold])
+                potential_info_gains.append(gain)
+                potential_thresholds.append([first_threshold])
 
-            # One threshold: first
-            gain = get_info_gain_multi_thresholds(data_cases, attrib, all_thresholds[0:1])
-            potential_info_gains.append(gain)
-            potential_thresholds.append([all_thresholds[0]])
+                if i != len(all_thresholds) - 1:
+                    # Two thresholds, try all between i + 1 and num thresholds
+                    for second_threshold in all_thresholds[i + 1:]:
+                        gain = get_info_gain_multi_thresholds(data_cases, total_entropy, attrib, [first_threshold, second_threshold])
+                        potential_info_gains.append(gain)
+                        potential_thresholds.append([first_threshold, second_threshold])
 
-            # One threshold: first
-            gain = get_info_gain_multi_thresholds(data_cases, attrib, all_thresholds[-1:])
-            potential_info_gains.append(gain)
-            potential_thresholds.append([all_thresholds[-1]])
-
-            # Two Thresholds, all combinations in between
-            for i, first_threshold in enumerate(all_thresholds[:-1]):
-                for second_threshold in all_thresholds[i + 1:]:
-                    gain = get_info_gain_multi_thresholds(data_cases, attrib, [first_threshold, second_threshold])
-                    potential_info_gains.append(gain)
-                    potential_thresholds.append([first_threshold, second_threshold])
-
+            # Choose best info gain from those calculated
             best_info_gain = -1.0
             best_idx = -1
             for idx, potential_info_gain in enumerate(potential_info_gains):
@@ -220,6 +190,7 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
                     best_info_gain = potential_info_gain
                     best_idx = idx
 
+            # Return only the best info gain
             return potential_info_gains[best_idx], potential_thresholds[best_idx]
 
 
@@ -253,7 +224,7 @@ def get_entropy(classes_counts: Dict[str, int], total_of_all_counts: int) -> flo
     return entropy
 
 
-def get_info_gain(data_cases: List[Case], attrib: int, threshold: float) -> float:
+def get_info_gain(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, threshold: float) -> float:
     """
     Calculate the information gained by splitting these data cases into subsets, split upon this attribute at threshold
     :param data_cases: Data set
@@ -261,9 +232,6 @@ def get_info_gain(data_cases: List[Case], attrib: int, threshold: float) -> floa
     :param threshold: Value of this attribute, below which will go to the lft tree
     :return:
     """
-    # TODO: Optimisation: Should be able to (verify this) move count_classes and total_entropy out to parent function. These are repeated for EACH potential_threshold
-    classes_counts = count_classes_in_dataset(data_cases)
-    total_entropy = get_entropy(classes_counts, len(data_cases))
 
     left_list = []
     right_list = []
@@ -275,24 +243,13 @@ def get_info_gain(data_cases: List[Case], attrib: int, threshold: float) -> floa
     left_entropy = get_entropy(count_classes_in_dataset(left_list), len(left_list))
     right_entropy = get_entropy(count_classes_in_dataset(right_list), len(right_list))
 
-    return total_entropy - left_entropy * (len(left_list) / len(data_cases)) - right_entropy * (len(right_list) / len(data_cases))
+    return entropy_for_data_cases - left_entropy * (len(left_list) / len(data_cases)) - right_entropy * (len(right_list) / len(data_cases))
 
 
-def get_info_gain_multi_thresholds(data_cases: List[Case], attrib: int, multiple_thresholds: List[float]) -> float:
-    # TODO: Optimisation: Should be able to (verify this) move count_classes and total_entropy out to parent function. These are repeated for EACH potential_threshold
-    classes_counts = count_classes_in_dataset(data_cases)
-    total_entropy = get_entropy(classes_counts, len(data_cases))
-
-    # TODO: option A:
-    split_lists = [[]]
-    for split_point in multiple_thresholds:
+def get_info_gain_multi_thresholds(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, multiple_thresholds: List[float]) -> float:
+    split_lists = []
+    for i in range(len(multiple_thresholds) + 1):  # One extra, because thresholds are in between lists
         split_lists.append([])
-    # TODO B:
-    # split_lists = [[] * (len(multiple_thresholds) + 1)]  # Number of split lists is num thresholds + 1
-    # TODO C:
-    # split_lists = [[] for x in range(len(multiple_thresholds) + 1)]  # Number of split lists is num thresholds + 1
-    # print("should be " + str(len(multiple_thresholds) + 1) + " lists inside a list")
-    # print(split_lists)
     for case in data_cases:
         for idx, threshold in enumerate(multiple_thresholds):
             if case.attributes[attrib] < threshold:
@@ -302,7 +259,7 @@ def get_info_gain_multi_thresholds(data_cases: List[Case], attrib: int, multiple
             split_lists[-1].append(case)
 
     # Information gain is total entropy for all data points, minus the entropy each split_list gains
-    info_gain = total_entropy
+    info_gain = entropy_for_data_cases
     for split_list in split_lists:
         split_entropy = get_entropy(count_classes_in_dataset(split_list), len(split_list))
         info_gain -= split_entropy * (len(split_list) / len(data_cases))
