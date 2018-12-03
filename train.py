@@ -12,7 +12,7 @@ from math import log
 from typing import List, Dict
 
 from classes.Case import Case
-from classes.Model import Model, Tree as DecisionTree, PredictionNode, InternalNode
+from classes.Model import Model, Tree as DecisionTree, PredictionNode, CategoricalSplitNode, ContinuousSplitNode
 
 FLOATING_POINT_EPSILON = 1.0E-13
 
@@ -68,36 +68,50 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
         return tree
 
     # This will not be a leaf node, so determine how this internal node should be split
-    tree = InternalNode()
 
     # Find information gains
     info_gains = []
     thresholds = []  # TODO: Support n-ary nodes with n-1 thresholds OR no threshold and n = number of categorical attribute values to EQUAL
     for attrib in range(len(Case.attributes_names)):  # TODO: get len info from Data
-        info, threshold = get_best_info_gain_for_attribute(data_cases, attrib)
-        # TODO: Is there a way to return a tuple, then deconstruct it into .append() methods?
-        info_gains.append(info)
-        thresholds.append(threshold)
+        if Case.attribute_type_is_continuous[attrib]:
+            info, threshold = get_best_info_gain_for_attribute(data_cases, attrib)
+            # TODO: Is there a way to return a tuple, then deconstruct it into .append() methods?
+            info_gains.append(info)
+            thresholds.append(threshold)
+        else:
+            raise NotImplementedError()
 
-    # Choose best information gain
+    # Find best information gain
     num_in_majority_class = -1.0
     best = -1
     for idx, num_counted in enumerate(info_gains):
         if num_counted > num_in_majority_class:
             num_in_majority_class = num_counted
             best = idx
-    tree.split_attribute = best
-    tree.threshold = thresholds[best]
 
-    # Build subsets of the data set by splitting at that threshold
     left_list = []
     right_list = []
-    for num_counted in data_cases:
-        num_counted.attributes_already_examined[best] = True
-        if num_counted.attributes[best] < thresholds[best]:
-            left_list.append(num_counted)
-        else:
-            right_list.append(num_counted)
+
+    # Save best information gain
+    if Case.attribute_type_is_continuous[best]:
+        tree = ContinuousSplitNode()
+        tree.split_attribute = best
+        tree.threshold = thresholds[best]
+
+        # Build subsets of the data set by splitting at that threshold
+        for num_counted in data_cases:
+            num_counted.attributes_already_examined[best] = True
+            if num_counted.attributes[best] < thresholds[best]:
+                left_list.append(num_counted)
+            else:
+                right_list.append(num_counted)
+    else:
+        tree = CategoricalSplitNode()
+        # TODO: save category to split on
+        # TODO: split into lists
+        raise NotImplementedError()
+
+    # Continue to build model recursively in children nodes with subsets of the data set
     tree.left_child = build_model_tree_recursive(left_list)
     tree.right_child = build_model_tree_recursive(right_list)
 

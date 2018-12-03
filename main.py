@@ -12,7 +12,7 @@ import logging
 import os
 import tkinter as tk
 from datetime import datetime
-from tkinter import filedialog, messagebox, IntVar, ttk
+from tkinter import filedialog, messagebox, IntVar, ttk, BooleanVar
 
 from about import get_about_message
 from classes.Case import Case, ParseCsvError
@@ -154,6 +154,8 @@ class Application(tk.Frame):
         self.cols_text_boxes = None
         self.cols_radio_buttons = None
         self.cols_radio_var = None
+        self.cols_categorical_checkboxes = None
+        self.cols_categorical_checkbox_vars = None
 
         self.button_process_csv = tk.Button(self.subframe_column_name_inputs_area)
         self.button_process_csv["text"] = "Update Metadata"
@@ -248,12 +250,26 @@ class Application(tk.Frame):
         self.subframe_col_options_inner = tk.Frame(self.subframe_col_options)
         self.subframe_col_options_inner.pack(expand=True, fill="both")
 
+        # Read values of first row, so that they can be provided to the user as hint for column names
         if self.filename is not "":
             row = read_one(self.filename)
             num_cols = len(row)
         else:
             num_cols = 4  # generate with four columns by default
             row = [""] * num_cols
+
+        # Use the first row to mark checkboxes categorical if a parse float() fails
+        self.cols_categorical_checkbox_vars = []
+        for idx, column in enumerate(row):
+            try:
+                float(column)
+                self.cols_categorical_checkbox_vars.append(BooleanVar())
+                self.cols_categorical_checkbox_vars[idx].set(False)
+            except ValueError:
+                self.cols_categorical_checkbox_vars.append(BooleanVar())
+                self.cols_categorical_checkbox_vars[idx].set(True)
+        # DEBUG:
+        logging.debug("Attribute columns are categorical? " + str([val.get() for val in self.cols_categorical_checkbox_vars]))
 
         # Create empty "padding columns" at the beginning and end
         self.subframe_col_options_inner.grid_columnconfigure(0, minsize=5)
@@ -265,6 +281,7 @@ class Application(tk.Frame):
         self.cols_text_boxes = []
         self.cols_radio_buttons = []
         self.cols_radio_var = IntVar()
+        self.cols_categorical_checkboxes = []
         for idx in range(num_cols):
             tk.Label(self.subframe_col_options_inner, text="#" + str(idx + 1) + ": " + row[idx]).grid(row=0, column=idx + 1)
         for idx in range(num_cols):
@@ -272,17 +289,31 @@ class Application(tk.Frame):
             text_box.grid(row=1, column=idx + 1)
             self.cols_text_boxes.append(text_box)
         for idx in range(num_cols):
+            checkbox = tk.Checkbutton(self.subframe_col_options_inner,
+                                      text="Categorical", variable=self.cols_categorical_checkbox_vars[idx], onvalue=True, offvalue=False)
+            checkbox.grid(row=2, column=idx + 1)
+            self.cols_categorical_checkboxes.append(checkbox)
+            # TODO: if a column is selected as the Label column, it will always be treated as categorical data. Update GUI to reflect this
+            # TODO: Perhaps, a helper function that is tied to a click event on the radio button. Disables and Checks the checkbutton (after saving its present value)
+        for idx in range(num_cols):
             radio = tk.Radiobutton(self.subframe_col_options_inner,
                                    text="Label", variable=self.cols_radio_var, value=idx)
-            radio.grid(row=2, column=idx + 1)
+            radio.grid(row=3, column=idx + 1)
             self.cols_radio_buttons.append(radio)
         self.cols_radio_buttons[num_cols - 1].select()  # Select last in list, since many data sets have the final column as the label
 
-        # TODO: Checkbox for each column to mark it as categorical vs. continuous? Will need to rework algorithm s.t. it can handle non-continuous values
-
-        # Skip over re-typing the column names every time for owls.csv
+        # DEBUG: Skip over re-typing the column names every time for owls.csv
         if DEBUG and "owls.csv" in self.filename:
             for idx, name in enumerate(["body-length", "wing-length", "body-width", "wing-width", "type"]):
+                self.cols_text_boxes[idx].insert(0, name)
+        elif DEBUG and "owls extra category.csv" in self.filename:
+            for idx, name in enumerate(["body-length", "wing-length", "favorite-cheese", "body-width", "wing-width", "type"]):
+                self.cols_text_boxes[idx].insert(0, name)
+        elif DEBUG and "autoimmune.csv" in self.filename:
+            for idx, name in enumerate(["Age", "Blood_Pressure", "BMI", "Plasma_level", "Autoimmune_Disease", "Adverse_events", "Drug_in_serum", "Liver_function", "Activity_test", "Secondary_test"]):
+                self.cols_text_boxes[idx].insert(0, name)
+        elif DEBUG and "autoimmune_extra_category.csv" in self.filename:
+            for idx, name in enumerate(["Age", "Blood_Pressure", "BMI", "Plasma_level", "Autoimmune_Disease", "Adverse_events", "Drug_in_serum", "Liver_function", "colour", "Activity_test", "Secondary_test"]):
                 self.cols_text_boxes[idx].insert(0, name)
 
     def make_single_results_frame(self) -> tk.Frame:
@@ -392,8 +423,18 @@ class Application(tk.Frame):
         logging.debug("Loading data file: " + self.filename)
 
         if self.filename is not "":
-            Case.attributes_names = []
+            # Read which column has been designated the label
             Case.label_column = self.cols_radio_var.get()
+
+            # Read which columns are categorical or continuous from check boxes
+            Case.attribute_type_is_continuous = []
+            for idx, isCategorical in enumerate(self.cols_categorical_checkbox_vars):
+                if idx != Case.label_column:
+                    Case.attribute_type_is_continuous.append(not isCategorical.get())
+            logging.debug("Saved to Case class: Attribute columns are continuous? " + str([val for val in Case.attribute_type_is_continuous]))  # DEBUG
+
+            # Read names for columns from user
+            Case.attributes_names = []
             for idx, text_box in enumerate(self.cols_text_boxes):
                 value = text_box.get()
                 if len(value) == 0:
@@ -424,10 +465,11 @@ class Application(tk.Frame):
                 if self.is_file_prepared:  # This indicates that this file has already been read once, and then user changed the label column. So, make it an error
                     tk.messagebox.showerror("Parse CSV error", "Error while reading file %s\n\nBad line: %s\n\nItem could note be parsed to a float: %s"
                                             % (self.filename, error.bad_line, error.bad_item))
-                else:
-                    tk.messagebox.showinfo("Parse CSV error",
-                                           "While reading file, a data point could not be read as a number: '%s'\n\nYou may need to select a different column as the label column."
-                                           % error.bad_item)
+                # DEBUG: removed even the warning which happens when a user loads a file and the last column is NOT the label (and thus not categorical)
+                # else:
+                #     tk.messagebox.showinfo("Parse CSV error",
+                #                            "While reading file, a data point could not be read as a number: '%s'\n\nYou may need to select a different column as the label column."
+                #                            % error.bad_item)
                 # Reset the GUI with no dataset loaded!
                 # This is done so the user does not see data there still, and ignore the error to continue training expecting that the file actually loaded
                 self.master_data_set = None
@@ -438,7 +480,8 @@ class Application(tk.Frame):
             # Fill table with data from file
             self.table_loaded_input.tag_configure("even", background="#eeeeee")
             for idx, case in enumerate(self.master_data_set):
-                self.table_loaded_input.insert("", "end", values=[[str(item) for item in case.attributes] + [case.label]], tags="even" if idx % 2 == 0 else "")
+                # TODO: probably gonna have to do this in a less compact form so that str() can be applied to all columns? And if that's true, then also do it for the results tables
+                self.table_loaded_input.insert("", "end", values=[item for item in case.attributes + [case.label]], tags="even" if idx % 2 == 0 else "")
 
             # Enable next step in UI flow
             self.button_train["state"] = tk.NORMAL
