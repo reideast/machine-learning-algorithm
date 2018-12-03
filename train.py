@@ -100,15 +100,12 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
         tree = ContinuousSplitNode()
         tree.split_attribute = best_attrib_to_split_on
         subsets = [[]]  # Start with one subset, since num children is num thresholds + 1
-        # subsets = [[] * (num_split_points + 1)]
-        # tree.threshold = thresholds[best]
-        # multiple_thresholds = [thresholds_per_attrib[best_attrib_to_split_on]]  # DEBUG: would populate this with the list of split points
         multiple_thresholds = thresholds_per_attrib[best_attrib_to_split_on]
         for split_point in multiple_thresholds:
             tree.thresholds.append(split_point)
             subsets.append([])
 
-        # Build subsets of the data set by splitting at that threshold
+        # Build subsets of the data set by splitting at those thresholds
         for case in data_cases:
             case.attributes_already_examined[best_attrib_to_split_on] = True
             for idx, threshold in enumerate(multiple_thresholds):
@@ -116,12 +113,7 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
                     subsets[idx].append(case)
                     break
             else:  # else clause on the for loop executes when loop doesn't break: Handles if the attrib is greater than the last threshold. Python!
-                subsets[-1].append(case)
-            # case.attributes_already_examined[best] = True
-            # if case.attributes[best] < thresholds[best]:
-            #     left_list.append(case)
-            # else:
-            #     right_list.append(case)
+                subsets[-1].append(case)  # Append to lsat item in list
     else:
         tree = CategoricalSplitNode()
         tree.split_attribute = best_attrib_to_split_on
@@ -195,6 +187,26 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
             # print(all_thresholds[1:]) # replace 1 with i
             potential_info_gains = []
             potential_thresholds = []
+
+            # # DEBUG:
+            # print("All thresholds, then first, then last")
+            # print(all_thresholds)
+            # print(all_thresholds[0:1])
+            # print(all_thresholds[0])
+            # print(all_thresholds[-1:])
+            # print(all_thresholds[-1])
+
+            # One threshold: first
+            gain = get_info_gain_multi_thresholds(data_cases, attrib, all_thresholds[0:1])
+            potential_info_gains.append(gain)
+            potential_thresholds.append([all_thresholds[0]])
+
+            # One threshold: first
+            gain = get_info_gain_multi_thresholds(data_cases, attrib, all_thresholds[-1:])
+            potential_info_gains.append(gain)
+            potential_thresholds.append([all_thresholds[-1]])
+
+            # Two Thresholds, all combinations in between
             for i, first_threshold in enumerate(all_thresholds[:-1]):
                 for second_threshold in all_thresholds[i + 1:]:
                     gain = get_info_gain_multi_thresholds(data_cases, attrib, [first_threshold, second_threshold])
@@ -279,8 +291,8 @@ def get_info_gain_multi_thresholds(data_cases: List[Case], attrib: int, multiple
     # split_lists = [[] * (len(multiple_thresholds) + 1)]  # Number of split lists is num thresholds + 1
     # TODO C:
     # split_lists = [[] for x in range(len(multiple_thresholds) + 1)]  # Number of split lists is num thresholds + 1
-    print("should be " + str(len(multiple_thresholds) + 1) + " lists inside a list")
-    print(split_lists)
+    # print("should be " + str(len(multiple_thresholds) + 1) + " lists inside a list")
+    # print(split_lists)
     for case in data_cases:
         for idx, threshold in enumerate(multiple_thresholds):
             if case.attributes[attrib] < threshold:
