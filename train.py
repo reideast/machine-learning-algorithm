@@ -59,9 +59,9 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
         tree = PredictionNode(len(data_cases))
         num_in_majority_class = -1
         majority_class_index = 0
-        for idx, num_counted in enumerate(list(count_classes.values())):
-            if num_counted > num_in_majority_class:
-                num_in_majority_class = num_counted
+        for idx, case in enumerate(list(count_classes.values())):
+            if case > num_in_majority_class:
+                num_in_majority_class = case
                 majority_class_index = idx
         tree.predicted = list(count_classes.keys())[majority_class_index]
         tree.num_cases_majority_class = num_in_majority_class
@@ -84,36 +84,54 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
     # Find best information gain
     num_in_majority_class = -1.0
     best = -1
-    for idx, num_counted in enumerate(info_gains):
-        if num_counted > num_in_majority_class:
-            num_in_majority_class = num_counted
+    for idx, case in enumerate(info_gains):
+        if case > num_in_majority_class:
+            num_in_majority_class = case
             best = idx
 
-    left_list = []
-    right_list = []
+    # left_list = []
+    # right_list = []
+    # subsets = []
 
     # Save best information gain
     if Case.attribute_type_is_continuous[best]:
         tree = ContinuousSplitNode()
         tree.split_attribute = best
-        tree.threshold = thresholds[best]
+        subsets = [[]]  # Start with one subset, since num children is num thresholds + 1
+        # subsets = [[] * (num_split_points + 1)]
+        # tree.threshold = thresholds[best]
+        multiple_thresholds = [thresholds[best]]  # DEBUG: would populate this with the list of split points
+        for split_point in multiple_thresholds:
+            tree.thresholds.append(split_point)
+            subsets.append([])
 
         # Build subsets of the data set by splitting at that threshold
-        for num_counted in data_cases:
-            num_counted.attributes_already_examined[best] = True
-            if num_counted.attributes[best] < thresholds[best]:
-                left_list.append(num_counted)
-            else:
-                right_list.append(num_counted)
+        for case in data_cases:
+            case.attributes_already_examined[best] = True
+            for idx, threshold in enumerate(multiple_thresholds):
+                if case.attributes[best] < threshold:
+                    subsets[idx].append(case)
+                    break
+            else:  # else clause on the for loop executes when loop doesn't break: Handles if the attrib is greater than the last threshold. Python!
+                subsets[len(subsets) - 1].append(case)
+            # case.attributes_already_examined[best] = True
+            # if case.attributes[best] < thresholds[best]:
+            #     left_list.append(case)
+            # else:
+            #     right_list.append(case)
     else:
         tree = CategoricalSplitNode()
+        tree.split_attribute = best
         # TODO: save category to split on
         # TODO: split into lists
+        subsets = []
         raise NotImplementedError()
 
     # Continue to build model recursively in children nodes with subsets of the data set
-    tree.left_child = build_model_tree_recursive(left_list)
-    tree.right_child = build_model_tree_recursive(right_list)
+    # tree.left_child = build_model_tree_recursive(left_list)
+    # tree.right_child = build_model_tree_recursive(right_list)
+    for subset in subsets:
+        tree.children.append(build_model_tree_recursive(subset))
 
     return tree
 

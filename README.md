@@ -37,9 +37,9 @@ Run `python main.py` to open GUI.
 
 ## Prerequisites
 
-### Python 3
+### Python 3.6
 
-Source code has been tested with Python version 3.6
+Source code has been tested with Python version 3.6. (Minimum, since type hinting has been used.)
 
 ### Graphviz
 

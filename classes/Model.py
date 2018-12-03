@@ -38,11 +38,10 @@ class InternalNode(Tree):
         super().__init__()
         self.split_attribute: int = None
 
-        self.threshold: float = None  # TODO: when implementing sub classes, delete this
+        self.children: List[Tree] = []
 
-        self.left_child: Tree = None  # TODO: Support 1 or 2 split points by allowing (2,3) trees
-        self.right_child: Tree = None  # TODO: Support categorical attributes by allowing n-ary trees
-        # TODO: When implementing subclasses, make this into a List
+        # TODO: Support 1 or 2 split points by allowing (2,3) trees
+        # TODO: Support categorical attributes by allowing n-ary trees
 
 
 class ContinuousSplitNode(InternalNode):
@@ -64,8 +63,7 @@ class CategoricalSplitNode(InternalNode):
 
     def __init__(self):
         super().__init__()
-        self.child_categories: List[
-            str] = []  # len should be n, where n = number of children AND n = number of ALL categories for this attribute observed across entire train/test data set
+        self.child_categories: List[str] = []  # len should be n, where n = number of children AND n = number of ALL categories for this attribute observed across entire train/test data set
 
 
 class PredictionNode(Tree):

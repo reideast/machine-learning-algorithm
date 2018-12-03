@@ -40,7 +40,7 @@ class Case:
         Use data within csv_line to build up this Case's attributes and label
         :param csv_line: str, should be a line read from a CSV file (and still has the newline character at the end)
         """
-        assert Case.label_column == -1, "Cannot parse CSV file until properties of file have been specified to the Case class"
+        assert Case.label_column != -1, "Cannot parse CSV file until properties of file have been specified to the Case class"
 
         # Loop through each comma-separated item in the line, after first truncating the newline from the end
         for idx, item in enumerate(csv_line[0:len(csv_line) - 1].split(",")):

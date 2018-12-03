@@ -10,7 +10,7 @@
 from typing import List
 
 from classes.Case import Case
-from classes.Model import Tree, InternalNode, PredictionNode, Model
+from classes.Model import Tree, Model, InternalNode, PredictionNode, ContinuousSplitNode, CategoricalSplitNode
 
 
 def test(model: Model, testing_cases: List[Case]) -> None:
@@ -32,13 +32,18 @@ def __predict(node: Tree, case: Case) -> None:
     if isinstance(node, PredictionNode):
         case.predicted = node.predicted
         # Note: If leaf node was not 100% one class, this just predicts the majority class. Which is chosen in 50/50 splits (or 33/33/33, etc) is non-deterministic in our algorithm
-    elif isinstance(node, InternalNode):
-        if case.attributes[node.split_attribute] < node.threshold:
-            __predict(node.left_child, case)
-        else:
-            __predict(node.right_child, case)
+    elif isinstance(node, ContinuousSplitNode):
+        for idx, threshold in enumerate(node.thresholds):
+            if case.attributes[node.split_attribute] < threshold:
+                __predict(node.children[idx], case)
+                break
+        else:  # else clause on the for loop executes when loop doesn't break: Handles if the attrib is greater than the last threshold. Python!
+            __predict(node.children[len(node.children) - 1], case)
+
+    elif isinstance(node, CategoricalSplitNode):
+        raise NotImplementedError("categorical attrib not done yet")  # TODO
     else:
-        raise NotImplementedError("Other node types implemented yet")  # TODO
+        raise NotImplementedError("Other node types implemented yet")  # TODO: Should this be an error? probably, since it's checking classes on the leaf of the hierarchy tree
 
 
 def score(testing_cases: List[Case]) -> float:
