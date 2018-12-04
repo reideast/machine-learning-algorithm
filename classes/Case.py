@@ -20,22 +20,24 @@ from typing import List, Any, ClassVar, Union
 class Case:
     # These are class-level variables, a Python idiom similar to "static"
     label_column: ClassVar[int] = -1  # integer, index of label in the CSV file
+    # TODO: Do something with this:
+    # TODO: In order to store confidence in all classes, even those not observed, store list of all observed labels during file parse
+    label_categories: List[str] = []  # List of predictable items, observed during file read
     attributes_names: ClassVar[List[str]] = []  # list of strings, the user-defined names for each column, all columns but label
     attribute_type_is_continuous: ClassVar[List[bool]] = []  # True if continuous, False if categorical. User defined. All columns but label
+    attribute_categories: ClassVar[List[Union[None, List[str]]]] = []  # For each attribute, a set of observed strings for categories None for continuous attributes
     # TODO: For categorical attributes, count and store list of observed categories during file parse
     label_name: ClassVar[str] = None  # string, the user-defined name for the label column
-
-    # TODO: In order to store confidence in all classes, even those not observed, store list of all observed labels during file parse
 
     def __init__(self, csv_line):
         self.label: str = None  # string, the actual class of this data case
         self.predicted: str = None  # string, the predicted class, if this case is used for testing
-        self.attributes: List[Union[float, str]] = []  # list of strings, all columns but label
+        self.attributes: List[Union[float, str]] = []  # list of attribute values, all columns but label
         self.attributes_already_examined: List[bool] = []  # list of booleans, same length as self.attributes
 
         self.__parse_csv_line(csv_line)
 
-    def __parse_csv_line(self, csv_line: str) -> None:
+    def __parse_csv_line(self, csv_line: str) -> None:  # TODO: this should be moved to the parse_csv file, maybe?
         """
         Use data within csv_line to build up this Case's attributes and label
         :param csv_line: str, should be a line read from a CSV file (and still has the newline character at the end)
@@ -46,12 +48,17 @@ class Case:
         for idx, item in enumerate(csv_line[0:len(csv_line) - 1].split(",")):
             if idx == Case.label_column:
                 self.label = item  # Save column tagged as label as a string
+                if item not in Case.label_categories:
+                    Case.label_categories.append(item)
             else:
                 try:
-                    if Case.attribute_type_is_continuous[idx if idx < Case.label_column else (idx - 1)]:  # Extra index processing is since this idx (0..columns in CSV) is NOT the same idx as for attributes (0...# col - one for the label col)
+                    attribute_column_idx = idx if idx < Case.label_column else (idx - 1)  # Extra index processing is since this idx (0..columns in CSV) is NOT the same idx as for attributes (0...# col - one for the label col)
+                    if Case.attribute_type_is_continuous[attribute_column_idx]:
                         self.attributes.append(float(item))
                     else:
                         self.attributes.append(item)
+                        if item not in Case.attribute_categories[attribute_column_idx]:
+                            Case.attribute_categories[attribute_column_idx].append(item)
                 except ValueError:
                     logging.error("Cannot parse attribute \"%s\" into a floating-point number" % item)
                     raise ParseCsvError(item, csv_line)

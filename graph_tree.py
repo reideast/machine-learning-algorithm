@@ -95,8 +95,10 @@ def __make_edge_labels(node: InternalNode) -> List[str]:
         for threshold in node.thresholds:
             labels.append("< %.1f" % threshold)  # TODO: format the middle threshold labels with range, e.g. n <= THIS < m
         labels.append("")
-        # print(labels)  # DEBUG
-        return labels
+    elif isinstance(node, CategoricalSplitNode):
+        for category in Case.attribute_categories[node.split_attribute]:
+            labels.append(category)
     else:
-        # TODO
-        raise NotImplementedError("labelling categorical nodes not implemented yet")
+        raise NotImplementedError("Other node types implemented yet")  # TODO: Should this be an error? probably, since it's checking classes on the leaf of the hierarchy tree
+    # print(labels)  # DEBUG
+    return labels

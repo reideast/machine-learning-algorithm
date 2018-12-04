@@ -41,7 +41,17 @@ def __predict(node: Tree, case: Case) -> None:
             __predict(node.children[len(node.children) - 1], case)
 
     elif isinstance(node, CategoricalSplitNode):
-        raise NotImplementedError("categorical attrib not done yet")  # TODO
+        for idx, category in enumerate(Case.attribute_categories[node.split_attribute]):
+            if case.attributes[node.split_attribute] == category:
+                __predict(node.children[idx], case)
+                break
+        else:
+            # DEBUG: shouldn't happen if set creation was done correctly
+            raise RuntimeError("Categorical item " + case.attributes[node.split_attribute] + "was not put into the list of possible categories during file parse of testing set")
+
+        # If a category is encountered that was never observed in the training set, set the prediction to
+        # TODO: What should the prediction be? "Category never observed [attrib_name]:[this_item_category]"?
+        # But this should be impossible with current implementation, since BOTH train and testing set are read, parsed at same time
     else:
         raise NotImplementedError("Other node types implemented yet")  # TODO: Should this be an error? probably, since it's checking classes on the leaf of the hierarchy tree
 

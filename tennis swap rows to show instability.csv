@@ -1,6 +1,5 @@
 sunny,hot,high,false,no
 sunny,hot,high,true,no
-overcast,hot,high,false,yes
 rainy,mild,high,false,yes
 rainy,cool,normal,false,yes
 rainy,cool,normal,true,no
@@ -12,3 +11,4 @@ sunny,mild,normal,true,yes
 overcast,mild,high,true,yes
 overcast,hot,normal,false,yes
 rainy,mild,high,true,no
+sunny,hot,normal,true,yes

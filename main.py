@@ -315,7 +315,7 @@ class Application(tk.Frame):
         elif DEBUG and "autoimmune_extra_category.csv" in self.filename:
             for idx, name in enumerate(["Age", "Blood_Pressure", "BMI", "Plasma_level", "Autoimmune_Disease", "Adverse_events", "Drug_in_serum", "Liver_function", "colour", "Activity_test", "Secondary_test"]):
                 self.cols_text_boxes[idx].insert(0, name)
-        elif DEBUG and "tennis.csv" in self.filename:
+        elif DEBUG and "tennis" in self.filename:
             for idx, name in enumerate(["Outlook", "Temp", "Humidity", "Windy", "Play?"]):
                 self.cols_text_boxes[idx].insert(0, name)
 
@@ -428,12 +428,19 @@ class Application(tk.Frame):
         if self.filename is not "":
             # Read which column has been designated the label
             Case.label_column = self.cols_radio_var.get()
+            Case.label_categories = []
 
             # Read which columns are categorical or continuous from check boxes
             Case.attribute_type_is_continuous = []
+            Case.attribute_categories = []
             for idx, isCategorical in enumerate(self.cols_categorical_checkbox_vars):
                 if idx != Case.label_column:
-                    Case.attribute_type_is_continuous.append(not isCategorical.get())
+                    if isCategorical.get():
+                        Case.attribute_type_is_continuous.append(False)  # TODO: move logic that sets up the Case static vars to parse_csv file, even if it means passing lists and such
+                        Case.attribute_categories.append([])
+                    else:
+                        Case.attribute_type_is_continuous.append(True)
+                        Case.attribute_categories.append(None)
             logging.debug("Saved to Case class: Attribute columns are continuous? " + str([val for val in Case.attribute_type_is_continuous]))  # DEBUG
 
             # Read names for columns from user

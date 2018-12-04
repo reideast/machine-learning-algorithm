@@ -77,15 +77,14 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
     # TODO: Support n-ary nodes with n-1 thresholds OR no threshold and n = number of categorical attribute values to EQUAL
     for attrib in range(len(Case.attributes_names)):  # TODO: get len info from Data
         if Case.attribute_type_is_continuous[attrib]:
-            info, thresholds = get_best_info_gain_for_attribute(data_cases, attrib)
+            info, thresholds = get_best_info_gain_for_continuous_attribute(data_cases, attrib)
             # TODO: Is there a way to return a tuple, then deconstruct it into .append() methods?
             info_gain_per_attrib.append(info)
             thresholds_per_attrib.append(thresholds)
         else:  # Categorical attribute
-            # TODO: determine info gain for a categorical attrib
-            # also, push None to thresholds_per_attrib
-            # This ensures that the info gain and thresholds Lists stay as parallel arrays
-            raise NotImplementedError()
+            info = get_best_info_gain_for_categorical_attribute(data_cases, attrib)
+            info_gain_per_attrib.append(info)
+            thresholds_per_attrib.append(None)  # This ensures that the info gain and thresholds Lists stay as parallel arrays
 
     # Find best information gain
     num_in_majority_class = -1.0
@@ -119,8 +118,19 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
         tree.split_attribute = best_attrib_to_split_on
         # TODO: save category to split on
         # TODO: split into lists
+
+        # TODO: This splitting code was done below when determining info gain. Can the code be saved (or even the lists themselves to save work)
         subsets = []
-        raise NotImplementedError()
+        for i in range(len(Case.attribute_categories[best_attrib_to_split_on])):  # One new list per categories that have been observed in this column
+            subsets.append([])
+        for case in data_cases:
+            for idx, category in enumerate(Case.attribute_categories[best_attrib_to_split_on]):
+                if case.attributes[best_attrib_to_split_on] == category:
+                    subsets[idx].append(case)
+                    break
+            else:
+                # DEBUG: shouldn't happen if set creation was done correctly
+                raise RuntimeError("Categorical item " + case.attributes[best_attrib_to_split_on] + "was not put into the list of possible categories during file parse of testing set")
 
     # Continue to build model recursively in children nodes with subsets of the data set
     # tree.left_child = build_model_tree_recursive(left_list)
@@ -131,13 +141,43 @@ def build_model_tree_recursive(data_cases: List[Case]) -> DecisionTree:
     return tree
 
 
-def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tuple[float, List[float]]:
+def get_best_info_gain_for_categorical_attribute(data_cases: List[Case], attrib: int) -> float:
     """
-    Determine the best threshold points to split this attribute on, as well as the corresponding information gain
+    Determine information gain if this attribute is split upon this categorical attrib
     :param data_cases: Dataset remaining for this node
-    :param attrib: Index of the attribute column to attempt to split on
-    :return: Tuple: best information gain possible by splitting on this attribute, List of thresholds to split on (1+)
+    :param attrib: Index of the attribute column to attempt to split on, which must be categorical
+    :return: Information gain that's possible by splitting on this attribute
     """
+    if data_cases[0].attributes_already_examined[attrib]:
+        return -1  # This indicates this attribute has actually already been utilised in an ancestor node. -1 will never the largest data gain
+    else:
+        # Optimisation: Calc entropy for this whole data set. It will be reused for each potential threshold
+        classes_counts = count_classes_in_dataset(data_cases)
+        total_entropy = get_entropy(classes_counts, len(data_cases))
+
+        # TODO: This splitting code is repeated if the the node is ACTUALLY split. Can the code be saved (or even the lists themselves to save work)
+        category_lists = []
+        for i in range(len(Case.attribute_categories[attrib])):  # One new list per categories that have been observed in this column
+            category_lists.append([])
+        for case in data_cases:
+            for idx, category in enumerate(Case.attribute_categories[attrib]):
+                if case.attributes[attrib] == category:
+                    category_lists[idx].append(case)
+                    break
+            else:
+                # DEBUG: shouldn't happen if set creation was done correctly
+                raise RuntimeError("Categorical item " + case.attributes[attrib] + "was not put into the list of possible categories during file parse of testing set")
+
+        # Information gain is total entropy for all data points, minus the entropy each split_list gains
+        info_gain = total_entropy
+        for split_list in category_lists:
+            split_entropy = get_entropy(count_classes_in_dataset(split_list), len(split_list))
+            info_gain -= split_entropy * (len(split_list) / len(data_cases))
+
+        return info_gain
+
+
+def get_best_info_gain_for_continuous_attribute(data_cases: List[Case], attrib: int) -> Tuple[float, List[float]]:
     if data_cases[0].attributes_already_examined[attrib]:
         return -1, [-1]  # This indicates this attribute has actually already been utilised in an ancestor node. -1 will never the largest data gain
     else:
@@ -156,10 +196,10 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
         if len(all_thresholds) == 0:
             # When ALL the data_cases have an identical value for attrib, the above guard against duplicates means that there are NO thresholds to try
             # So, just choose the first date case's attrib as threshold
-            gain = get_info_gain(data_cases, total_entropy, attrib, data_cases[0].attributes[attrib])
+            gain = get_info_gain_for_threshold(data_cases, total_entropy, attrib, data_cases[0].attributes[attrib])
             return gain, [data_cases[0].attributes[attrib]]
         elif len(all_thresholds) == 1:  # Only one threshold, the smallest possible (since this function will only be called when n >= 2)
-            gain = get_info_gain(data_cases, total_entropy, attrib, all_thresholds[0])
+            gain = get_info_gain_for_threshold(data_cases, total_entropy, attrib, all_thresholds[0])
             return gain, [all_thresholds[0]]
         else:  # At least two thresholds, i.e. at least three data points
             potential_info_gains = []
@@ -167,14 +207,14 @@ def get_best_info_gain_for_attribute(data_cases: List[Case], attrib: int) -> Tup
 
             for i, first_threshold in enumerate(all_thresholds):
                 # One threshold only
-                gain = get_info_gain_multi_thresholds(data_cases, total_entropy, attrib, [first_threshold])
+                gain = get_info_gain_for_threshold(data_cases, total_entropy, attrib, first_threshold)
                 potential_info_gains.append(gain)
                 potential_thresholds.append([first_threshold])
 
                 if i != len(all_thresholds) - 1:
                     # Two thresholds, try all between i + 1 and num thresholds
                     for second_threshold in all_thresholds[i + 1:]:
-                        gain = get_info_gain_multi_thresholds(data_cases, total_entropy, attrib, [first_threshold, second_threshold])
+                        gain = get_info_gain_for_thresholds(data_cases, total_entropy, attrib, [first_threshold, second_threshold])
                         potential_info_gains.append(gain)
                         potential_thresholds.append([first_threshold, second_threshold])
 
@@ -221,7 +261,7 @@ def get_entropy(classes_counts: Dict[str, int], total_of_all_counts: int) -> flo
 
 
 # TODO: Merge this with below method?
-def get_info_gain(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, threshold: float) -> float:
+def get_info_gain_for_threshold(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, threshold: float) -> float:
     """
     Calculate the information gained by splitting these data cases into subsets, split upon this attribute at threshold
     :param data_cases: Data set
@@ -243,7 +283,7 @@ def get_info_gain(data_cases: List[Case], entropy_for_data_cases: float, attrib:
     return entropy_for_data_cases - left_entropy * (len(left_list) / len(data_cases)) - right_entropy * (len(right_list) / len(data_cases))
 
 
-def get_info_gain_multi_thresholds(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, multiple_thresholds: List[float]) -> float:
+def get_info_gain_for_thresholds(data_cases: List[Case], entropy_for_data_cases: float, attrib: int, multiple_thresholds: List[float]) -> float:
     split_lists = []
     for i in range(len(multiple_thresholds) + 1):  # One extra, because thresholds are in between lists
         split_lists.append([])
